@@ -263,6 +263,9 @@ add_executable(tutorial09_several_objects
 	
 	tutorial09_vbo_indexing/StandardShading.vertexshader
 	tutorial09_vbo_indexing/StandardShading.fragmentshader
+
+    tutorial09_vbo_indexing/suzanne.obj
+    tutorial09_vbo_indexing/uvmap.DDS
 )
 target_link_libraries(tutorial09_several_objects
 	${ALL_LIBS}
@@ -517,6 +520,12 @@ add_executable(playground
 	playground/playground.cpp
 	common/shader.cpp
 	common/shader.hpp
+    common/texture.cpp
+    common/texture.hpp
+    common/controls.cpp
+    common/controls.hpp
+    playground/fragmentplayer.fragmentshader
+    playground/vertexplayer.vertexshader
 )
 target_link_libraries(playground
 	${ALL_LIBS}

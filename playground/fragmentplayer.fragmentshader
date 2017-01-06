@@ -1,0 +1,22 @@
+#version 330 core
+
+////Tut4
+//in vec3 fragmentColor;
+
+  //Tut5
+  in vec2 UV;
+  uniform sampler2D myTextureSampler;
+
+//Tut2
+out vec3 color;
+
+void main()
+{
+
+    //    //Tut2
+    //    color = vec3(1,0,0);
+//    //Tut 4
+//    color = fragmentColor;
+      //Tut 5
+      color = texture(myTextureSampler, UV).rgb;
+}

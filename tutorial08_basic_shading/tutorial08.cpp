@@ -200,7 +200,7 @@ int main( void )
 
 	} // Check if the ESC key was pressed or the window was closed
 	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
-		   glfwWindowShouldClose(window) == 0 );
+		   glfwWindowShouldClose(window) == 0 );	
 
 	// Cleanup VBO and shader
 	glDeleteBuffers(1, &vertexbuffer);
