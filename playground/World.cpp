@@ -123,10 +123,11 @@ void World::Draw(GLuint programID, GLuint matrixID, mat4 projectionMatrix, mat4 
         vTempObjs.push_back(tempObj);
         vTempTrans.push_back(trans);
     }
+    
+    // Detect collisions and compute final velocities from the temperory velocites
     for(i=0;i<vTempObjs.size();i++){
         Object* pObj=m_vpObjects[i];
         Object& tempObj=vTempObjs[i];
-        //printf("translate %d:%f,%f,%f\n",i,tempObj.m_fXpos,tempObj.m_fYpos,tempObj.m_fZpos);
         bool collision=false;
         mat4 trans=vTempTrans[i];
         for(j=0;j<vTempObjs.size();j++){
@@ -142,20 +143,28 @@ void World::Draw(GLuint programID, GLuint matrixID, mat4 projectionMatrix, mat4 
             float dh=tempObj.m_fHeight+pJObj->m_fHeight;
             float dd=tempObj.m_fDepth+pJObj->m_fDepth;
             dw/=2;dh/=2;dd/=2;
+            // AABB collision detection. If axial distance is less than or equal that of when adjacent
             if(dx<=dw&&dy<=dh&&dz<=dd){
                 collision=true;
                 dx/=dw;
                 dy/=dh;
                 dz/=dd;
-                if(dx>dy&&dx>dz){tempObj.m_v3Velocity.x=-tempObj.m_v3Velocity.x;
+                if(dx>dy&&dx>dz){
+                    tempObj.m_v3Velocity.x=-tempObj.m_v3Velocity.x;
                     printf("x collision. v=%f\n",tempObj.m_v3Velocity.x);
-                    pObj->m_v3Velocity=tempObj.m_v3Velocity;tempObj.m_v3Velocity.x/=2;}
-                else if(dy>dx&&dy>dz){tempObj.m_v3Velocity.y=-tempObj.m_v3Velocity.y;
+                    pObj->m_v3Velocity=tempObj.m_v3Velocity;tempObj.m_v3Velocity.x/=2;
+                }
+                else if(dy>dx&&dy>dz){
+                    tempObj.m_v3Velocity.y=-tempObj.m_v3Velocity.y;
                     printf("y collision. v=%f\n",tempObj.m_v3Velocity.y);
-                pObj->m_v3Velocity=tempObj.m_v3Velocity;tempObj.m_v3Velocity.y/=2;}
-                else if(dz>dy&&dz>dx){tempObj.m_v3Velocity.z=-tempObj.m_v3Velocity.z;
+                    pObj->m_v3Velocity=tempObj.m_v3Velocity;
+                    tempObj.m_v3Velocity.y/=2;
+                }
+                else if(dz>dy&&dz>dx){
+                    tempObj.m_v3Velocity.z=-tempObj.m_v3Velocity.z;
                     printf("z collision. v=%f\n",tempObj.m_v3Velocity.z);
-                pObj->m_v3Velocity=tempObj.m_v3Velocity;tempObj.m_v3Velocity.z/=2;}
+                    pObj->m_v3Velocity=tempObj.m_v3Velocity;tempObj.m_v3Velocity.z/=2;
+                }
                 break;
             }
         }
@@ -163,7 +172,7 @@ void World::Draw(GLuint programID, GLuint matrixID, mat4 projectionMatrix, mat4 
         trans=translate(trans, mat3(dTimePassed)*tempObj.m_v3Velocity);
         pObj->m_fXpos=trans[3].x; pObj->m_fYpos=trans[3].y; pObj->m_fZpos=trans[3].z;
         printf("Drawing %d with w:%f,h:%f,d:%f\n",i,pObj->m_fWidth,pObj->m_fHeight,pObj->m_fDepth);
-        printf("at %f,%f,%f\n",i,pObj->m_fXpos,pObj->m_fYpos,pObj->m_fZpos);
+        printf("at %f,%f,%f\n",pObj->m_fXpos,pObj->m_fYpos,pObj->m_fZpos);
         printf("vx:%f,vy:%f,vz:%f\n",pObj->m_v3Velocity.x,pObj->m_v3Velocity.y,pObj->m_v3Velocity.z);
         if(pObj->vertexBuffer){
             mat4 MVP = projectionMatrix*viewMatrix*trans;
