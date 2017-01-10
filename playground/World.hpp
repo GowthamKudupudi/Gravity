@@ -35,59 +35,55 @@ public:
     class Object{
         friend class World;
     public:
-        
+        Object* GetCollider();
     private:
         Object(
-            float   fWidth,
-            float   dHeight,
-            float   fDepth          = 0.0,
-            float   fXpos           = 0.0,
-            float   fYpos           = 0.0,
-            float   fZpos           = 0.0,
-            GLuint   vertexBuffer    = 0,
-            GLuint   colorBuffer     = 0,
-            GLsizei  totalVertices   = 0,
-            Shape    shape           = TRIANGLE,
-            float    fDensity        = 1000.0,
-            float    fCollisionCoeff = 0.5,
-            vec3     v3Velocity      = vec3(),
-            Spin     spin            = Spin()
+               vec3     v3Size,
+               vec3     v3Position,
+               vec3     v3Direction,
+               bool     bMighty         = false,
+               GLuint   vertexBuffer    = 0,
+               GLuint   colorBuffer     = 0,
+               GLsizei  totalVertices   = 0,
+               Shape    shape           = TRIANGLE,
+               float    fDensity        = 0.0f,
+               float    fCollisionCoeff = 1.0f,
+               vec3     v3Velocity      = vec3(),
+               vec3     v3AVelocity     = vec3()
         );
-        float          m_fWidth;
-        float          m_fHeight;
-        float          m_fDepth;
-        float          m_fXpos;
-        float          m_fYpos;
-        float          m_fZpos;
-        GLuint          vertexBuffer;
-        GLuint          colorBuffer;
-        GLsizei         totalVertices;
-        Shape          m_Shape;
-        float          m_fDensity;
+        vec3            m_v3Size;
+        vec3            m_v3Position;
+        vec3            m_v3Direction;
+        GLuint          m_VertexBuffer;
+        GLuint          m_ColorBuffer;
+        GLsizei         m_TotalVertices;
+        Shape           m_Shape;
+        float           m_fDensity;
         float           m_fCollisionCoeff;
         vec3            m_v3Velocity;
-        Spin            m_spin;
+        vec3            m_v3AVelocity;
         unsigned int    m_uiWorldIndex=0;
+        Object*         m_pCollider=NULL;
+        bool            m_bMighty=false;
+        vector<Object*> m_vpStuckObjs;
     };
     static World* CreateTheWorld(GLFWwindow* pWindow);
     static Object* NewObject(
-                      float   fWidth,
-                      float   dHeight,
-                      float   fDepth          = 0.0,
-                      float   fXpos           = 0.0,
-                      float   fYpos           = 0.0,
-                      float   fZpos           = 0.0,
-                      GLuint   vertexBuffer    = 0,
-                      GLuint   colorBuffer     = 0,
-                      GLsizei  totalVertices   = 0,
-                      Shape    shape           = TRIANGLE,
-                      float    fDensity        = 1000.0,
-                      float    fCollisionCoeff = 0.5,
-                      vec3     v3Velocity      = vec3(),
-                      Spin     spin            = Spin()
+                             vec3     v3Size,
+                             vec3     v3Position,
+                             vec3     v3Direction,
+                             bool     bMighty         = false,
+                             GLuint   vertexBuffer    = 0,
+                             GLuint   colorBuffer     = 0,
+                             GLsizei  totalVertices   = 0,
+                             Shape    shape           = TRIANGLE,
+                             float    fDensity        = 0.0,
+                             float    fCollisionCoeff = 1.0,
+                             vec3     v3Velocity      = vec3(),
+                             vec3     v3AVelocity     = vec3()
                       );
     static void Draw(GLuint programID, GLuint matrixID,mat4 projectionMatrix, mat4 viewMatrix);
-    static GLboolean CheckCollision(World::Object &one, World::Object &two); // AABB - AABB collision
+    static void Stick(Object* pObj1, Object* pToObj2,vec3 v3AtPos,vec3 v3InDirection);
 private:
     World(GLFWwindow* pWindow);
     ~World();

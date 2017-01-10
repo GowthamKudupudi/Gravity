@@ -25,10 +25,10 @@ float horizontalAngle = 3.14f;
 float verticalAngle = 0.0f;
 // Initial Field of View
 float initialFoV = 45.0f; // Human eye 114
-float initialCamZPos = 50000.0f;
+float initialCamZPos = 20000.0f;
 float speed = 2500.0f; // 1500 km / second
 float mouseSpeed = 0.005f;
-float minDisplayRange=0.1f;     // 100m
+float minDisplayRange=0.08f;     // 100m
 float maxDisplayRange=sqrt(pow(initialCamZPos,2)*3); // 20,000km
 glm::vec3 camPosition = glm::vec3( 0, 0, initialCamZPos );
 float G = 6.674*pow(10,-20); // km3.kg-1.s-2
@@ -109,7 +109,7 @@ int main( void )
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     
-    window = glfwCreateWindow( (int)width, (int)height, "Playground - Colored Cube", NULL, NULL);
+    window = glfwCreateWindow( (int)width, (int)height, "Playground", NULL, NULL);
     if( window == NULL ){
         fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
         getchar();
@@ -278,8 +278,8 @@ int main( void )
     };
     static const GLfloat gfTriColorBufferData[]={
         1.0f,0.0f,0.0f,
-        0.0f,1.0f,0.0f,
-        0.0f,0.0f,1.0f
+        1.0f,0.0f,0.0f,
+        1.0f,0.0f,0.0f
     };
     
     static GLfloat g_red_color_buffer_data[]={
@@ -390,24 +390,33 @@ int main( void )
            "D:%f\n"
            "R:%f\n",G,D,R);
     World::Object* pEarth=
-        pWorld->NewObject(2*R,2*R,2*R,0,0,0,sphereVertexBuffer,earthColorBuffer,uiNumSphericalVertices,World::Shape::SPHERE, 1000*D,0.5,vec3(0.0),World::Spin(vec3(0.0,1.0,0.0),radians(10.0)));
+        pWorld->NewObject(vec3(2*R,2*R,2*R),vec3(0,0,0),vec3(0.0f,0.0f,0.0f),false,sphereVertexBuffer,earthColorBuffer,uiNumSphericalVertices,World::Shape::SPHERE, 4000*D,0.8,vec3(0.0),vec3(0.0f,10.0f,0.0f));
     World::Object* pProjectile=
-        pWorld->NewObject(2000,2000,2000,R+4000+1,0,0,astVertexBuffer, astColorBuffer,uiNumAstVertices,World::SPHERE,1000*WD,1,vec3(0,0,0),World::Spin());
+        pWorld->NewObject(vec3(1000,1000,1000),vec3(R+4000+1,0,0),vec3(0.0f),false,astVertexBuffer, astColorBuffer,uiNumAstVertices,World::SPHERE,1000*WD,1,vec3(0,800,0));
+    World::Object* pEye=
+    pWorld->NewObject(vec3(1000,1000,1), vec3(), vec3(),true,triangleVertexBuffer,triColorVertexBuffer,3,World::Shape::TRIANGLE);
+    World::Stick(pEye, pEarth, vec3(0,0,R+100), vec3());
+    
+    //Bounding walls the distance of 4 times the radius of earth
     World::Object* eastWall=
-    pWorld->NewObject(200, 2*initialCamZPos, 2*initialCamZPos, initialCamZPos, 0,0,0,0,0,World::Shape::CUBOID);
+        pWorld->NewObject(vec3(200, 2*initialCamZPos, 2*initialCamZPos), vec3(R+4600, 0,0),vec3(0.0f),false,0,0,0,World::Shape::CUBOID);
     World::Object* westWall=
-    pWorld->NewObject(200, 2*initialCamZPos, 2*initialCamZPos, -initialCamZPos, 0,0,0,0,0,World::Shape::CUBOID);
+        pWorld->NewObject(vec3(200, 2*initialCamZPos, 2*initialCamZPos), vec3(-R-4600, 0,0),vec3(0.0f),false,0,0,0,World::Shape::CUBOID);
     World::Object* NorthWall=
-    pWorld->NewObject(2*initialCamZPos,200, 2*initialCamZPos, 0,initialCamZPos,0,0,0,0,World::Shape::CUBOID);
+        pWorld->NewObject(vec3(2*initialCamZPos,200, 2*initialCamZPos), vec3(0,R+4600,0),vec3(0.0f),false,0,0,0,World::Shape::CUBOID);
     World::Object* SouthWall=
-    pWorld->NewObject(2*initialCamZPos,200, 2*initialCamZPos, 0,-initialCamZPos,0,0,0,0,World::Shape::CUBOID);
+        pWorld->NewObject(vec3(2*initialCamZPos,200, 2*initialCamZPos), vec3(0,-R-4600,0),vec3(0.0f),false,0,0,0,World::Shape::CUBOID);
     World::Object* frontWall=
-    pWorld->NewObject(2*initialCamZPos, 2*initialCamZPos,200, 0,0,initialCamZPos,0,0,0,World::Shape::CUBOID);
+        pWorld->NewObject(vec3(2*initialCamZPos, 2*initialCamZPos,200), vec3(0,0,R+4600),vec3(),false,0,0,0,World::Shape::CUBOID);
     World::Object* backWall=
-     pWorld->NewObject(2*initialCamZPos, 2*initialCamZPos,200, 0,0,-initialCamZPos,0,0,0,World::Shape::CUBOID);
+        pWorld->NewObject(vec3(2*initialCamZPos, 2*initialCamZPos,200),vec3( 0,0,-R-4600),vec3(),false,0,0,0,World::Shape::CUBOID);
     do{
         // Measure speed
         double currentTime = glfwGetTime();
+        if (glfwGetKey( window, GLFW_KEY_J ) == GLFW_PRESS){
+            
+        }
+        
         nbFrames++;
         char text[256];
         if ( currentTime - lastTime >= 1.0 ){ // If last prinf() was more than 1sec ago
