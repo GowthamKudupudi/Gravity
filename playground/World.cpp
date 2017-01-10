@@ -136,6 +136,7 @@ afterGravityImpact:
         vTempObjs.push_back(tempObj);
         vTempTrans.push_back(trans);
         pObj->m_pCollider=NULL;
+        tempObj.m_pCollider=NULL;
     }
     
     // Detect collisions and compute final velocities from the temperory velocites
@@ -157,7 +158,7 @@ afterGravityImpact:
             if(dPos.x<=tSize.x&&dPos.y<=tSize.y&&dPos.z<tSize.z){
                 collision=true;
                 dPos/=tSize;
-                pObj->m_pCollider=pJObj;
+                pObj->m_pCollider=m_vpObjects[j];
                 if(!tempObj.m_fDensity)break;
                 //apply damping factor
                 tempObj.m_v3Velocity*=tempObj.m_fCollisionCoeff*pJObj->m_fCollisionCoeff;

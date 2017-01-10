@@ -20,6 +20,7 @@ extern float mouseSpeed;
 extern float minDisplayRange;
 extern float maxDisplayRange;
 extern float initialCamZPos;
+extern glm::vec3 direction;
 
 glm::mat4 ViewMatrix;
 glm::mat4 ProjectionMatrix;
@@ -52,7 +53,7 @@ void computeMatricesFromInputs(){
 	verticalAngle   += mouseSpeed * float( height/2 - ypos );
 
 	// Direction : Spherical coordinates to Cartesian coordinates conversion
-	glm::vec3 direction(
+	direction=vec3(
 		cos(verticalAngle) * sin(horizontalAngle), 
 		sin(verticalAngle),
 		cos(verticalAngle) * cos(horizontalAngle)

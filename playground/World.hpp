@@ -35,7 +35,7 @@ public:
     class Object{
         friend class World;
     public:
-        Object* GetCollider();
+        Object* GetCollider(){return m_pCollider;}
     private:
         Object(
                vec3     v3Size,

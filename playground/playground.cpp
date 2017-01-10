@@ -35,6 +35,7 @@ float G = 6.674*pow(10,-20); // km3.kg-1.s-2
 float D = 5510*pow(10,9); // kg.km-3
 float WD = 1000*pow(10,9); // kg.km-3
 float R = 6000;//6371; //km
+glm::vec3 direction;
 
 #include "common/shader.hpp"
 //Tut5
@@ -281,6 +282,45 @@ int main( void )
         1.0f,0.0f,0.0f,
         1.0f,0.0f,0.0f
     };
+    static const GLfloat gfCubeColorBufferData[]={
+        1.0f,1.0f,.0f,
+        1.0f,1.0f,.0f,
+        1.0f,1.0f,.0f,
+        1.0f,1.0f,.0f,
+        1.0f,.0f,.0f,
+        1.0f,.0f,.0f,
+        1.0f,.0f,.0f,
+        1.0f,.0f,.0f,
+        1.0f,.0f,.0f,
+        1.0f,.0f,.0f,
+        1.0f,.0f,.0f,
+        1.0f,.0f,.0f,
+        1.0f,.0f,.0f,
+        1.0f,.0f,.0f,
+        1.0f,1.0f,.0f,
+        1.0f,1.0f,.0f,
+        1.0f,1.0f,.0f,
+        1.0f,1.0f,.0f,
+        1.0f,1.0f,.0f,
+        1.0f,1.0f,.0f,
+        1.0f,1.0f,.0f,
+        1.0f,1.0f,.0f,
+        1.0f,1.0f,.0f,
+        1.0f,1.0f,.0f,
+        1.0f,1.0f,.0f,
+        .0f,1.0f,1.0f,
+        .0f,1.0f,1.0f,
+        .0f,1.0f,1.0f,
+        .0f,1.0f,1.0f,
+        .0f,1.0f,1.0f,
+        .0f,1.0f,1.0f,
+        .0f,1.0f,1.0f,
+        .0f,1.0f,1.0f,
+        .0f,1.0f,1.0f,
+        .0f,1.0f,1.0f,
+        .0f,1.0f,1.0f
+
+    };
     
     static GLfloat g_red_color_buffer_data[]={
         1.0f,   0.0f,   0.0f,
@@ -359,6 +399,11 @@ int main( void )
     glBindBuffer(GL_ARRAY_BUFFER, triColorVertexBuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(gfTriColorBufferData), gfTriColorBufferData, GL_STATIC_DRAW);
     
+    GLuint cubeColorVertexBuffer;
+    glGenBuffers(1, &cubeColorVertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, cubeColorVertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(gfCubeColorBufferData), gfCubeColorBufferData, GL_STATIC_DRAW);
+    
     GLuint earthColorBuffer;
     glGenBuffers(1, &earthColorBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, earthColorBuffer);
@@ -410,19 +455,26 @@ int main( void )
         pWorld->NewObject(vec3(2*initialCamZPos, 2*initialCamZPos,200), vec3(0,0,R+4600),vec3(),false,0,0,0,World::Shape::CUBOID);
     World::Object* backWall=
         pWorld->NewObject(vec3(2*initialCamZPos, 2*initialCamZPos,200),vec3( 0,0,-R-4600),vec3(),false,0,0,0,World::Shape::CUBOID);
+    bool shot=false;
+    int hitCount=0;
     do{
         // Measure speed
         double currentTime = glfwGetTime();
-        if (glfwGetKey( window, GLFW_KEY_J ) == GLFW_PRESS){
-            
+        if (glfwGetKey( window, GLFW_KEY_J ) == GLFW_PRESS&&!shot){
+            World::Object* pProjectile=
+            pWorld->NewObject(vec3(1000,1000,1000),camPosition,vec3(0.0f),false,CubeVertexBuffer, cubeColorVertexBuffer,uiNumAstVertices,World::CUBOID,10*WD,1,direction*1000.0f);
+            shot=true;
+            lastTime+=1.0;
         }
         
         nbFrames++;
         char text[256];
+        char countText[256];
         if ( currentTime - lastTime >= 1.0 ){ // If last prinf() was more than 1sec ago
             sprintf(text,"%d fps", nbFrames );
             nbFrames = 0;
             lastTime += 1.0;
+            shot=false;
         }
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glUseProgram(programID);
@@ -432,12 +484,16 @@ int main( void )
         mat4 ViewMatrix=getViewMatrix();
         
         pWorld->Draw(programID, MatrixID, ProjectionMatrix, ViewMatrix);
-        
-        
+        if(pEye->GetCollider()!=NULL && pEye->GetCollider()!=pEarth){
+            hitCount++;
+            
+        }
+        sprintf(countText,"hitCount: %d", hitCount );
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);
         
-        printText2D(text, 10, 10, 30);
+        //printText2D(text, 10, 10, 30);
+        printText2D(countText, 10, 10, 30);
         
         glfwSwapBuffers(window);
         glfwPollEvents();
