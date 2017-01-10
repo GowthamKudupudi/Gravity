@@ -221,8 +221,8 @@ int main( void )
         -1.0f, 0.0f, 0.0f
         
     };
-    static unsigned int uiNumSphericalVertices=3*8*4*4*4*4*4;
-    static unsigned int uiNumAstVertices=3*8*4*4*4;
+    static const unsigned int uiNumSphericalVertices=3*8*4*4*4*4*4;
+    static const unsigned int uiNumAstVertices=3*8*4*4*4;
     GLfloat gfSphereVertexBufferData[3*uiNumSphericalVertices];
     NormalSmooth(g_octahedron_vertex_buffer_data, 3*3*8, gfSphereVertexBufferData, 3*uiNumSphericalVertices, 5);
     GLfloat gfAstVertexBufferData[3*uiNumAstVertices];

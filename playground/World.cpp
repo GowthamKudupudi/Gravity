@@ -5,13 +5,19 @@
 //  Created by SatyaGowthamKudupudi on 08/01/17.
 //
 //
-
+// Include GLEW
+#ifndef __glew_h__
+#include <GL\glew.h>
+#endif
 #include "World.hpp"
 #include "common/controls.hpp"
 #include <vector>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glfw3.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <cmath>
 
 using namespace std;
 using namespace glm;
@@ -24,6 +30,22 @@ float World::m_fLastDrawTime = 0.0;
 World*      World::m_pOneWorld  = NULL;
 GLFWwindow* World::m_pWindow    = NULL;
 vector<World::Object*> World::m_vpObjects;
+//void glUniformMatrix4fv(GLint location,
+//	GLsizei count,
+//	GLboolean transpose,
+//	const GLfloat *value);
+//
+//void glEnableVertexAttribArray(GLuint index);
+//
+//void glBindBuffer(GLenum target,
+//	GLuint buffer);
+//void glVertexAttribPointer(GLuint index,
+//	GLint size,
+//	GLenum type,
+//	GLboolean normalized,
+//	GLsizei stride,
+//	const GLvoid * pointer);
+//#define GL_ARRAY_BUFFER                                0x8892
 
 World::World(GLFWwindow* pWindow){}
 World::~World(){}
