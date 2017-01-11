@@ -195,7 +195,7 @@ afterGravityImpact:
         pObj->m_v3Direction+=v3AngularDisplacement;
         // Draw later if the object is stuck to another object.
         ++iStuckObjIndex;
-        if(vpStuckObj.size()&& pObj==vpStuckObj[iStuckObjIndex])continue;
+        if(iStuckObjIndex<vpStuckObj.size()&& pObj==vpStuckObj[iStuckObjIndex])continue;
         --iStuckObjIndex;
         rot=rotate(rot,pObj->m_v3Direction);
         scale = glm::scale(scale,pObj->m_v3Size/2.0f);
