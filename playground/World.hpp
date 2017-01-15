@@ -36,12 +36,13 @@ public:
         friend class World;
     public:
         Object* GetCollider(){return m_pCollider;}
+        float GetMass();
+        float GetVolume(float fR=0);
     private:
         Object(
                vec3     v3Size,
                vec3     v3Position,
                vec3     v3Direction,
-               bool     bMighty         = false,
                GLuint   vertexBuffer    = 0,
                GLuint   colorBuffer     = 0,
                GLsizei  totalVertices   = 0,
@@ -64,15 +65,14 @@ public:
         vec3            m_v3AVelocity;
         unsigned int    m_uiWorldIndex=0;
         Object*         m_pCollider=NULL;
-        bool            m_bMighty=false;
         vector<Object*> m_vpStuckObjs;
+        Object*         m_pPuller = NULL;
     };
     static World* CreateTheWorld(GLFWwindow* pWindow);
     static Object* NewObject(
                              vec3     v3Size,
                              vec3     v3Position,
                              vec3     v3Direction,
-                             bool     bMighty         = false,
                              GLuint   vertexBuffer    = 0,
                              GLuint   colorBuffer     = 0,
                              GLsizei  totalVertices   = 0,

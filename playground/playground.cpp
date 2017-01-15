@@ -430,41 +430,43 @@ int main( void )
     
     // For speed computation
     double lastTime = glfwGetTime();
+    double lastShootTime = glfwGetTime();
     int nbFrames = 0;
     printf("G:%.10e\n"
            "D:%f\n"
            "R:%f\n",G,D,R);
     World::Object* pEarth=
-        pWorld->NewObject(vec3(2*R,2*R,2*R),vec3(0,0,0),vec3(0.0f,0.0f,0.0f),false,sphereVertexBuffer,earthColorBuffer,uiNumSphericalVertices,World::Shape::SPHERE, 4000*D,0.8,vec3(0.0),vec3(0.0f,10.0f,0.0f));
-    World::Object* pProjectile=
-        pWorld->NewObject(vec3(1000,1000,1000),vec3(R+4000+1,0,0),vec3(0.0f),false,astVertexBuffer, astColorBuffer,uiNumAstVertices,World::SPHERE,1000*WD,1,vec3(0,800,0));
+        pWorld->NewObject(vec3(2*R,2*R,2*R),vec3(0,0,0),vec3(0.0f,0.0f,0.0f),sphereVertexBuffer,earthColorBuffer,uiNumSphericalVertices,World::Shape::SPHERE, 40000*D,0.8,vec3(0.0),vec3(0.0f,0.0f,0.0f));
+//    World::Object* pMoon=
+//        pWorld->NewObject(vec3(1000,1000,1000),vec3(R+4000+1,0,0),vec3(0.0f),astVertexBuffer, astColorBuffer,uiNumAstVertices,World::SPHERE,1000*WD,1,vec3(0,800,0));
     World::Object* pEye=
-    pWorld->NewObject(vec3(1000,1000,1), vec3(), vec3(),true,triangleVertexBuffer,triColorVertexBuffer,3,World::Shape::TRIANGLE);
+        pWorld->NewObject(vec3(1000,1000,1000), vec3(), vec3(),CubeVertexBuffer, cubeColorVertexBuffer,uiNumAstVertices,World::CUBOID);
     World::Stick(pEye, pEarth, vec3(0,0,R+100), vec3());
     
     //Bounding walls the distance of 4 times the radius of earth
     World::Object* eastWall=
-        pWorld->NewObject(vec3(200, 2*initialCamZPos, 2*initialCamZPos), vec3(R+4600, 0,0),vec3(0.0f),false,0,0,0,World::Shape::CUBOID);
+        pWorld->NewObject(vec3(200, 2*initialCamZPos, 2*initialCamZPos), vec3(R+4600, 0,0),vec3(0.0f),0,0,0,World::Shape::CUBOID);
     World::Object* westWall=
-        pWorld->NewObject(vec3(200, 2*initialCamZPos, 2*initialCamZPos), vec3(-R-4600, 0,0),vec3(0.0f),false,0,0,0,World::Shape::CUBOID);
+        pWorld->NewObject(vec3(200, 2*initialCamZPos, 2*initialCamZPos), vec3(-R-4600, 0,0),vec3(0.0f),0,0,0,World::Shape::CUBOID);
     World::Object* NorthWall=
-        pWorld->NewObject(vec3(2*initialCamZPos,200, 2*initialCamZPos), vec3(0,R+4600,0),vec3(0.0f),false,0,0,0,World::Shape::CUBOID);
+        pWorld->NewObject(vec3(2*initialCamZPos,200, 2*initialCamZPos), vec3(0,R+4600,0),vec3(0.0f),0,0,0,World::Shape::CUBOID);
     World::Object* SouthWall=
-        pWorld->NewObject(vec3(2*initialCamZPos,200, 2*initialCamZPos), vec3(0,-R-4600,0),vec3(0.0f),false,0,0,0,World::Shape::CUBOID);
+        pWorld->NewObject(vec3(2*initialCamZPos,200, 2*initialCamZPos), vec3(0,-R-4600,0),vec3(0.0f),0,0,0,World::Shape::CUBOID);
     World::Object* frontWall=
-        pWorld->NewObject(vec3(2*initialCamZPos, 2*initialCamZPos,200), vec3(0,0,R+4600),vec3(),false,0,0,0,World::Shape::CUBOID);
+        pWorld->NewObject(vec3(2*initialCamZPos, 2*initialCamZPos,200), vec3(0,0,R+4600),vec3(),0,0,0,World::Shape::CUBOID);
     World::Object* backWall=
-        pWorld->NewObject(vec3(2*initialCamZPos, 2*initialCamZPos,200),vec3( 0,0,-R-4600),vec3(),false,0,0,0,World::Shape::CUBOID);
+        pWorld->NewObject(vec3(2*initialCamZPos, 2*initialCamZPos,200),vec3( 0,0,-R-4600),vec3(),0,0,0,World::Shape::CUBOID);
     bool shot=false;
     int hitCount=0;
+    vec3 sizeOfBullet=vec3(100,100,100);
+    float speedOfBullet=50.0f;
     do{
         // Measure speed
         double currentTime = glfwGetTime();
-        if (glfwGetKey( window, GLFW_KEY_J ) == GLFW_PRESS&&!shot){
+        if (glfwGetKey( window, GLFW_KEY_J ) == GLFW_PRESS&&speedOfBullet*(currentTime-lastShootTime)>length(sizeOfBullet)){
             World::Object* pProjectile=
-            pWorld->NewObject(vec3(1000,1000,1000),camPosition,vec3(0.0f),false,CubeVertexBuffer, cubeColorVertexBuffer,uiNumAstVertices,World::CUBOID,10*WD,1,direction*1000.0f);
-            shot=true;
-            lastTime+=1.0;
+            pWorld->NewObject(sizeOfBullet,camPosition,vec3(0.0f),CubeVertexBuffer, cubeColorVertexBuffer,uiNumAstVertices,World::CUBOID,10*WD,1,direction*speedOfBullet);
+            lastShootTime=glfwGetTime();
         }
         
         nbFrames++;
@@ -474,7 +476,6 @@ int main( void )
             sprintf(text,"%d fps", nbFrames );
             nbFrames = 0;
             lastTime += 1.0;
-            shot=false;
         }
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glUseProgram(programID);
@@ -484,7 +485,7 @@ int main( void )
         mat4 ViewMatrix=getViewMatrix();
         
         pWorld->Draw(programID, MatrixID, ProjectionMatrix, ViewMatrix);
-        if(pEye->GetCollider()!=NULL && pEye->GetCollider()!=pEarth){
+        if(pEye->GetCollider()!=NULL){
             hitCount++;
             
         }
@@ -504,6 +505,17 @@ int main( void )
     glDeleteBuffers(1, &earthColorBuffer);
     glDeleteBuffers(1, &triangleVertexBuffer);
     glDeleteBuffers(1, &triColorVertexBuffer);
+    glDeleteBuffers(1, &vertexbuffer);
+    glDeleteBuffers(1, &CubeVertexBuffer);
+    glDeleteBuffers(1, &octahedronVertexBuffer);
+    glDeleteBuffers(1, &sphereVertexBuffer);
+    glDeleteBuffers(1, &astVertexBuffer);
+    glDeleteBuffers(1, &triangleVertexBuffer);
+    glDeleteBuffers(1, &triColorVertexBuffer);
+    glDeleteBuffers(1, &cubeColorVertexBuffer);
+    glDeleteBuffers(1, &astColorBuffer);
+    glDeleteBuffers(1, &RedColorBuffer);
+    glDeleteBuffers(1, &uvbuffer);
     
     glDeleteProgram(programID);
     glDeleteVertexArrays(1, &VertexArrayID);
