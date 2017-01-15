@@ -9,7 +9,7 @@
 #ifndef __glew_h__
 #include <GL/glew.h>
 #endif
-#include "World.hpp"
+#include "world.hpp"
 #include "common/controls.hpp"
 #include <vector>
 #include <glm/glm.hpp>

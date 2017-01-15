@@ -43,7 +43,7 @@ glm::vec3 direction;
 //Tut6
 #include "common/controls.hpp"
 #include "common/text2D.hpp"
-#include "World.hpp"
+#include "world.hpp"
 
 #define octahedron_HT 0.816496580927726
 #define EQ_TRIANGLE_HT 0.866025403784439
