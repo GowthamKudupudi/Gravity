@@ -445,17 +445,17 @@ int main( void )
     
     //Bounding walls the distance of 4 times the radius of earth
     World::Object* eastWall=
-        pWorld->NewObject(vec3(200, 2*initialCamZPos, 2*initialCamZPos), vec3(R+4600, 0,0),vec3(0.0f),0,0,0,World::Shape::CUBOID);
+    pWorld->NewObject(vec3(200, 2*initialCamZPos, 2*initialCamZPos), vec3(R+4600, 0,0),vec3(0.0f),0,0,0,World::CUBOID);
     World::Object* westWall=
-        pWorld->NewObject(vec3(200, 2*initialCamZPos, 2*initialCamZPos), vec3(-R-4600, 0,0),vec3(0.0f),0,0,0,World::Shape::CUBOID);
+    pWorld->NewObject(vec3(200, 2*initialCamZPos, 2*initialCamZPos), vec3(-R-4600, 0,0),vec3(0.0f),0,0,0,World::CUBOID);
     World::Object* NorthWall=
-        pWorld->NewObject(vec3(2*initialCamZPos,200, 2*initialCamZPos), vec3(0,R+4600,0),vec3(0.0f),0,0,0,World::Shape::CUBOID);
+    pWorld->NewObject(vec3(2*initialCamZPos,200, 2*initialCamZPos), vec3(0,R+4600,0),vec3(0.0f),0,0,0,World::CUBOID);
     World::Object* SouthWall=
-        pWorld->NewObject(vec3(2*initialCamZPos,200, 2*initialCamZPos), vec3(0,-R-4600,0),vec3(0.0f),0,0,0,World::Shape::CUBOID);
+        pWorld->NewObject(vec3(2*initialCamZPos,200, 2*initialCamZPos), vec3(0,-R-4600,0),vec3(0.0f),0,0,0,World::CUBOID);
     World::Object* frontWall=
-        pWorld->NewObject(vec3(2*initialCamZPos, 2*initialCamZPos,200), vec3(0,0,R+4600),vec3(),0,0,0,World::Shape::CUBOID);
+        pWorld->NewObject(vec3(2*initialCamZPos, 2*initialCamZPos,200), vec3(0,0,R+4600),vec3(),0,0,0,World::CUBOID);
     World::Object* backWall=
-        pWorld->NewObject(vec3(2*initialCamZPos, 2*initialCamZPos,200),vec3( 0,0,-R-4600),vec3(),0,0,0,World::Shape::CUBOID);
+        pWorld->NewObject(vec3(2*initialCamZPos, 2*initialCamZPos,200),vec3( 0,0,-R-4600),vec3(),0,0,0,World::CUBOID);
     bool shot=false;
     int hitCount=0;
     vec3 sizeOfBullet=vec3(100,100,100);
