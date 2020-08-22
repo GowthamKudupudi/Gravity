@@ -182,11 +182,11 @@ void World::Draw (
             float u1 = 0.0;
             float u2 = 0.0;
             vec3 v3Displacement;
-            pObj->m_v3Velocity = tmpIObj.m_v3Velocity;
-            pJObj->m_v3Velocity = tmpJObj.m_v3Velocity;
             if (dPos .x > dPos .y && dPos .x > dPos .z) {
-               u1 = tmpIObj.m_v3Velocity.x;
-               u2 = tmpJObj.m_v3Velocity.x;
+               u1 = pObj->m_v3Velocity.x;
+               u2 = pJObj->m_v3Velocity.x;
+               pObj->m_v3Velocity=tmpIObj.m_v3Velocity;
+               pJObj->m_v3Velocity=tmpJObj.m_v3Velocity;
                pObj->m_v3Velocity.x = (2*m1*u1 + u2*(m2-m1))/(m1+m2)+u2-u1;
                pJObj->m_v3Velocity.x =(2*m1*u1 + u2*(m2-m1))/(m1+m2);
                printf ("x collision. u12v12:(%f,%f,%f,%f)\n",
@@ -199,8 +199,10 @@ void World::Draw (
                //v3Displacement.x = 0;
                pJObj->m_v3Position += v3Displacement;
             } else if (dPos.y > dPos.x && dPos.y > dPos.z) {
-               u1 = tmpIObj.m_v3Velocity.y;
-               u2 = tmpJObj.m_v3Velocity.y;
+               u1 = pObj->m_v3Velocity.y;
+               u2 = pJObj->m_v3Velocity.y;
+               pObj->m_v3Velocity=tmpIObj.m_v3Velocity;
+               pJObj->m_v3Velocity=tmpJObj.m_v3Velocity;
                pObj->m_v3Velocity.x = (2*m1*u1 + u2*(m2-m1))/(m1+m2)+u2-u1;
                pJObj->m_v3Velocity.x =(2*m1*u1 + u2*(m2-m1))/(m1+m2);
                printf ("x collision. u12v12:(%f,%f,%f,%f)\n",
@@ -212,8 +214,10 @@ void World::Draw (
                //v3Displacement.y = 0;
                pJObj->m_v3Position += v3Displacement;
             } else if (dPos.z > dPos.y && dPos.z > dPos.x) {
-               u1 = tmpIObj.m_v3Velocity.z;
-               u2 = tmpJObj.m_v3Velocity.z;
+               u1 = pObj->m_v3Velocity.z;
+               u2 = pJObj->m_v3Velocity.z;
+               pObj->m_v3Velocity=tmpIObj.m_v3Velocity;
+               pJObj->m_v3Velocity=tmpJObj.m_v3Velocity;
                pObj->m_v3Velocity.z = (2*m1*u1 + u2*(m2-m1))/(m1+m2)+u2-u1;
                pJObj->m_v3Velocity.z =(2*m1*u1 + u2*(m2-m1))/(m1+m2);
                printf ("z collision. u12v12:(%f,%f,%f,%f)\n",
@@ -230,6 +234,7 @@ void World::Draw (
             goto afterCollision;
          }//if (dPos.x <= tSize.x && dPos.y <= tSize.y && dPos.z <= tSize.z)
       }//for (j = 0; j < vTempObjs .size (); ++j)
+      pObj->m_v3Velocity = tmpIObj.m_v3Velocity;
       pObj->m_v3Position += tmpIObj.m_v3Velocity * dTimePassed;
    
    afterCollision:
@@ -240,14 +245,14 @@ void World::Draw (
       // Calculate new direction of the object based on its angular velociy
       vec3 v3AngularDisplacement = pObj ->m_v3AVelocity * dTimePassed;
       pObj->m_v3Direction+=v3AngularDisplacement;
-      
+      if (i>5) {
       printf ("%d: m:%f whd:(%f,%f,%f) ", i, pObj->mass_fm, pObj->m_v3Size.x,
          pObj->m_v3Size.y, pObj->m_v3Size.z);
-      printf ("at xyz:(%f,%f,%f) ", pObj->m_v3Position.x, pObj->m_v3Position.y,
+      printf ("at xyz:(%a,%a,%a) ", pObj->m_v3Position.x, pObj->m_v3Position.y,
          pObj->m_v3Position.z);
-      printf ("with vxyz:(%f,%f,%f)\n", pObj->m_v3Velocity.x,
+      printf ("with vxyz:(%a,%a,%a)\n", pObj->m_v3Velocity.x,
          pObj->m_v3Velocity.y, pObj->m_v3Velocity.z);
-      
+      }
       // Draw later if the object is stuck to another object.
       ++iStuckObjIndex;
       if (

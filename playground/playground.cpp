@@ -482,7 +482,7 @@ int main( void ) {
       vec3 (0.0f, 0.0f, 0.0f), sphereVertexBuffer, earthColorBuffer,
       uiNumSphericalVertices, World::Shape::SPHERE, 40000 * D, 0.8, vec3 (0.0),
       vec3(0.0f, 0.0f, 0.0f));
-   /*
+   
    World::Object* pMoon=
       pWorld->NewObject(vec3(1000,1000,1000), vec3(R+4000+1,0,0), vec3(0.0f),
       astVertexBuffer, astColorBuffer, uiNumAstVertices, World::SPHERE,
@@ -491,6 +491,7 @@ int main( void ) {
    World::Object* pEye = pWorld->NewObject (vec3 (1000, 1000, 1000), vec3(),
       vec3(), CubeVertexBuffer, cubeColorVertexBuffer, uiNumAstVertices,
       World::CUBOID);
+   World::stick_objects (pEye, pEarth, vec3(0,0,R+100), vec3());
    */
    World::Object* pEye = pWorld->NewObject (vec3 (1000, 1000, 1000),
       vec3 (-2000, 0, 0), vec3 (), CubeVertexBuffer, cubeColorVertexBuffer,
@@ -501,8 +502,6 @@ int main( void ) {
       vec3 (2000, 0, 0), vec3 (), CubeVertexBuffer, cubeColorVertexBuffer,
       uiNumAstVertices, World::CUBOID, 40000000*D, 0.8, vec3(-0.0, 0.0, 0.0),
       vec3(0.0f, 0.0f, 0.0f));
-   
-   //World::stick_objects (pEye, pEarth, vec3(0,0,R+100), vec3());
    
    bool shot = false;
    int hitCount = 0;
