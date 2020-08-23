@@ -25,7 +25,7 @@ float horizontalAngle = 3.14f;
 float verticalAngle = 0.0f;
 // Initial Field of View
 float initialFoV = 45.0f; // Human eye 114
-float initialCamZPos = 5000.0f; // 20000.0 to look at earth
+float initialCamZPos = 20000.0f; // 20000.0 to look at earth
 float speed = 2500.0f; // 1500 km / second
 float mouseSpeed = 0.005f;
 float minDisplayRange = 0.08f;     // 100m
@@ -477,7 +477,7 @@ int main( void ) {
    World::Object* backWall = pWorld->NewObject (
       vec3 (2*initialCamZPos, 2*initialCamZPos, 200),
       vec3 (0, 0, -initialCamZPos), vec3(), 0, 0, 0, World::CUBOID);
-   /*
+   
    World::Object* pEarth = pWorld->NewObject (vec3 (2*R, 2*R, 2*R), vec3 (0,0,0),
       vec3 (0.0f, 0.0f, 0.0f), sphereVertexBuffer, earthColorBuffer,
       uiNumSphericalVertices, World::Shape::SPHERE, 40000 * D, 0.8, vec3 (0.0),
@@ -486,13 +486,13 @@ int main( void ) {
    World::Object* pMoon=
       pWorld->NewObject(vec3(1000,1000,1000), vec3(R+4000+1,0,0), vec3(0.0f),
       astVertexBuffer, astColorBuffer, uiNumAstVertices, World::SPHERE,
-      1000*WD, 1, vec3(0,3000,0));
+      1000*WD, 1, vec3(0,2000,0));
    
    World::Object* pEye = pWorld->NewObject (vec3 (1000, 1000, 1000), vec3(),
       vec3(), CubeVertexBuffer, cubeColorVertexBuffer, uiNumAstVertices,
       World::CUBOID);
    World::stick_objects (pEye, pEarth, vec3(0,0,R+100), vec3());
-   */
+   /*
    World::Object* pEye = pWorld->NewObject (vec3 (1000, 1000, 1000),
       vec3 (-2000, 0, 0), vec3 (), CubeVertexBuffer, cubeColorVertexBuffer,
       uiNumAstVertices, World::CUBOID, 40000000*D, 0.8, vec3 (0.0, 0.0, 0.0),
@@ -502,7 +502,7 @@ int main( void ) {
       vec3 (2000, 0, 0), vec3 (), CubeVertexBuffer, cubeColorVertexBuffer,
       uiNumAstVertices, World::CUBOID, 40000000*D, 0.8, vec3(-0.0, 0.0, 0.0),
       vec3(0.0f, 0.0f, 0.0f));
-   
+   */
    bool shot = false;
    int hitCount = 0;
    vec3 sizeOfBullet = vec3 (100, 100, 100);
@@ -511,11 +511,12 @@ int main( void ) {
       // Measure speed
       double currentTime = glfwGetTime ();
       if (glfwGetKey (window, GLFW_KEY_SPACE) == GLFW_PRESS &&
-         speedOfBullet * (currentTime - lastShootTime) > length (sizeOfBullet)) {
+         speedOfBullet * (currentTime - lastShootTime) > length (sizeOfBullet)
+      ) {
          World::Object* pProjectile =
          pWorld->NewObject (sizeOfBullet, camPosition, vec3 (0.0f),
             CubeVertexBuffer, cubeColorVertexBuffer, uiNumAstVertices,
-            World::CUBOID, 10 * WD, 1, direction * speedOfBullet);
+            World::CUBOID, 10 * D, 1, direction * speedOfBullet);
          lastShootTime = glfwGetTime ();
       }
       
