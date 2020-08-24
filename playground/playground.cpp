@@ -481,7 +481,7 @@ int main( void ) {
    World::Object* pEarth = pWorld->NewObject (vec3 (2*R, 2*R, 2*R), vec3 (0,0,0),
       vec3 (0.0f, 0.0f, 0.0f), sphereVertexBuffer, earthColorBuffer,
       uiNumSphericalVertices, World::Shape::SPHERE, 40000 * D, 0.8, vec3 (0.0),
-      vec3(0.0f, 0.0f, 0.0f));
+      vec3(0.0f, 1.0f, 0.0f));
    
    World::Object* pMoon=
       pWorld->NewObject(vec3(1000,1000,1000), vec3(R+4000+1,0,0), vec3(0.0f),
