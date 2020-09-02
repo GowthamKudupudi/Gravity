@@ -300,14 +300,14 @@ void World::Draw (
 
    //Draw stuck objects(our red triangle)
    int k = -1;
-   for (i = 0; i < m_vpObjects .size(); ++i) {
+   for (i = 6; i < m_vpObjects .size(); ++i) {
       Object* pObj = m_vpObjects [i];
-      if (!pObj->m_vpStuckObjs .size()) continue;
+      if (!pObj->m_vpStuckObjs .size() || pObj->massive_pm!=pObj) continue;
       vec3 dPos = pObj->m_v3Position - vMagnets [++k] .m_v3Position;
       vec3 dDir = pObj->m_v3Direction - vMagnets [k] .m_v3Direction;
       // Update positions of stuck objects
       for (
-         j = 0; j < pObj->m_vpStuckObjs .size () && pObj->massive_pm == pObj; ++j
+         j = 0; j < pObj->m_vpStuckObjs .size (); ++j
       ) {
          Object& rJObj = *pObj->m_vpStuckObjs [j];
          vec3 rpos = rJObj .m_v3Position - vMagnets[k] .m_v3Position;
