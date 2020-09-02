@@ -1,4 +1,5 @@
 build
+Build
 **/*.dll
 **/*.exe
 build/*
@@ -12,5 +13,5 @@ Thumbs.db
 OpenGL-tutorial_v*
 **.mtl
 .DS_Store
-playground/playground
+playground/playground*
 

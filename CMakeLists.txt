@@ -1,6 +1,6 @@
 # CMake entry point
 cmake_minimum_required (VERSION 3.0)
-project (World)
+project (Gravity)
 
 find_package(OpenGL REQUIRED)
 
