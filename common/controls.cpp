@@ -9,38 +9,12 @@ using namespace glm;
 
 #include "controls.hpp"
 
-extern float width;
-extern float height;
-extern glm::vec3 camPosition;
-extern float horizontalAngle;
-extern float verticalAngle;
-extern float initialFoV;
-extern float speed;
-extern float mouseSpeed;
-extern float minDisplayRange;
-extern float maxDisplayRange;
-extern float initialCamZPos;
-extern glm::vec3 direction;
-
 glm::mat4 ViewMatrix;
 glm::mat4 ProjectionMatrix;
 
-glm::mat4 getViewMatrix(){
-	return ViewMatrix;
-}
-glm::mat4 getProjectionMatrix(){
-	return ProjectionMatrix;
-}
-
 void computeMatricesFromInputs(){
 
-	// glfwGetTime is called only once, the first time this function is called
-	static double lastTime = glfwGetTime();
-
-	// Compute time difference between current and last frame
-	double currentTime = glfwGetTime();
-	float deltaTime = float(currentTime - lastTime);
-
+	
 	// Get mouse position
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);

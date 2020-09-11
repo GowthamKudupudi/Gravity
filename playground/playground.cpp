@@ -36,6 +36,12 @@ float D = 5510 * pow (10,9); // kg.km-3
 float WD = 1000 * pow (10,9); // kg.km-3
 float R = 6000;//6371; //km
 glm::vec3 direction;
+double lastTime = glfwGetTime();
+double currentTime = lastTime;
+float deltaTime = 0;
+double lastPrintTime = lastTime;
+double lastShootTime = lastTime;
+
 
 #include "common/shader.hpp"
 //Tut5
@@ -452,8 +458,6 @@ int main( void ) {
    initText2D( "Holstein.DDS" );
    
    // For speed computation
-   double lastTime = glfwGetTime();
-   double lastShootTime = glfwGetTime();
    int nbFrames = 0;
    printf("G:%.10e\n"
           "D:%f\n"
@@ -508,8 +512,12 @@ int main( void ) {
    vec3 sizeOfBullet = vec3 (100, 100, 100);
    float speedOfBullet = 50.0f;
    do {
+      lastTime = currentTime;
+      currentTime = glfwGetTime();
+      deltaTime = currentTime - lastTime;
+      computeMatricesFromInputs();
+
       // Measure speed
-      double currentTime = glfwGetTime ();
       if (glfwGetKey (window, GLFW_KEY_SPACE) == GLFW_PRESS &&
          speedOfBullet * (currentTime - lastShootTime) > length (sizeOfBullet)
       ) {
@@ -524,19 +532,16 @@ int main( void ) {
       char text[256];
       char countText[256];
       // If last prinf() was more than 1sec ago
-      if (currentTime - lastTime >= 1.0) {
+      if (currentTime - lastPrintTime >= 1.0) {
          sprintf (text, "%d fps", nbFrames);
          nbFrames = 0;
-         lastTime += 1.0;
+         lastPrintTime = currentTime;
       }
       glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
       glUseProgram (programID);
       
-      computeMatricesFromInputs ();
-      mat4 ProjectionMatrix = getProjectionMatrix ();
-      mat4 ViewMatrix = getViewMatrix ();
       
-      pWorld->Draw (programID, MatrixID, ProjectionMatrix, ViewMatrix);
+      pWorld->Draw (programID, MatrixID);
       if (pEye->GetCollider() != NULL) {
          ++hitCount;
       }
@@ -544,8 +549,8 @@ int main( void ) {
       glDisableVertexAttribArray(0);
       glDisableVertexAttribArray(1);
       
-      //printText2D(text, 10, 10, 30);
-      printText2D (countText, 10, 10, 30);
+      printText2D(text, 10, 40, 20);
+      printText2D (countText, 10, 10, 20);
       
       glfwSwapBuffers (window);
       glfwPollEvents ();

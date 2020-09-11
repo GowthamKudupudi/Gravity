@@ -80,14 +80,9 @@ mat4 rotate (mat4 r,vec3 v) {
 //}
 
 void World::Draw (
-   GLuint programID, GLuint matrixID, mat4 projectionMatrix, mat4 viewMatrix
+   GLuint programID, GLuint matrixID
 ) {
-   float dTimePassed = m_fLastDrawTime;
-   m_fLastDrawTime = glfwGetTime();
-   static const float initialTime = m_fLastDrawTime;
-   //float dTotalTimePassed = m_fLastDrawTime - initialTime;
-   dTimePassed = m_fLastDrawTime - dTimePassed;
-   printf ("TimePassed: %f\n", dTimePassed);
+   printf ("TimePassed: %f\n", deltaTime);
    int i = 0; int j = 0;
    vector <Object> vTempObjs;
    // Copy of objects having stuck objects
@@ -114,12 +109,12 @@ void World::Draw (
          vec3 displacement = pJObj->m_v3Position - pObj->m_v3Position;
          float d = length (displacement);
          float acceleration = G * pJObj->mass_fm / pow (d, 2);
-         float speed = acceleration * dTimePassed;
+         float speed = acceleration * deltaTime;
          vec3 velocity = displacement * speed / d;
          tempObj .m_v3Velocity += velocity;
       }
    afterGravityImpact:
-      tempObj .m_v3Position += tempObj .massive_pm -> m_v3Velocity * dTimePassed;
+      tempObj .m_v3Position += tempObj .massive_pm -> m_v3Velocity * deltaTime;
       vTempObjs .push_back (tempObj);
       pObj->m_pCollider = NULL;
       tempObj.m_pCollider = NULL;
@@ -194,10 +189,10 @@ void World::Draw (
                printf ("x collision. u12v12:(%f,%f,%f,%f)\n",
                   u1, u2, pObj->m_v3Velocity.x, pJObj->m_v3Velocity.x);
                // account for reflection loss
-               v3Displacement = pObj->m_v3Velocity * dTimePassed;
+               v3Displacement = pObj->m_v3Velocity * deltaTime;
                //v3Displacement.x=0;
                pObj->m_v3Position += v3Displacement;
-               v3Displacement = pJObj->m_v3Velocity * dTimePassed;
+               v3Displacement = pJObj->m_v3Velocity * deltaTime;
                //v3Displacement.x = 0;
                pJObj->m_v3Position += v3Displacement;
             } else if (dPos.y > dPos.x && dPos.y > dPos.z) {
@@ -213,10 +208,10 @@ void World::Draw (
                }
                printf ("y collision. u12v12:(%f,%f,%f,%f)\n",
                   u1, u2, pObj->m_v3Velocity.y, pJObj->m_v3Velocity.y);
-               v3Displacement = pObj->m_v3Velocity * dTimePassed;
+               v3Displacement = pObj->m_v3Velocity * deltaTime;
                //v3Displacement.y=0;
                pObj->m_v3Position += v3Displacement;
-               v3Displacement = pJObj->m_v3Velocity * dTimePassed;
+               v3Displacement = pJObj->m_v3Velocity * deltaTime;
                //v3Displacement.y = 0;
                pJObj->m_v3Position += v3Displacement;
             } else if (dPos.z > dPos.y && dPos.z > dPos.x) {
@@ -232,10 +227,10 @@ void World::Draw (
                }
                printf ("z collision. u12v12:(%f,%f,%f,%f)\n",
                   u1, u2, pObj->m_v3Velocity.z, pJObj->m_v3Velocity.z);
-               v3Displacement = pObj->m_v3Velocity * dTimePassed;
+               v3Displacement = pObj->m_v3Velocity * deltaTime;
                //v3Displacement.z=0;
                pObj->m_v3Position += v3Displacement;
-               v3Displacement = pJObj->m_v3Velocity * dTimePassed;
+               v3Displacement = pJObj->m_v3Velocity * deltaTime;
                //v3Displacement.z = 0;
                pJObj->m_v3Position += v3Displacement;
             }
@@ -247,7 +242,7 @@ void World::Draw (
          ;
       }//for (j = 0; j < vTempObjs .size (); ++j)
       pObj->m_v3Velocity = tmpIObj.m_v3Velocity;
-      pObj->m_v3Position += tmpIObj.m_v3Velocity * dTimePassed;
+      pObj->m_v3Position += tmpIObj.m_v3Velocity * deltaTime;
    
    afterCollision:
       if (pObj ->m_vpStuckObjs .size () && pObj->massive_pm==pObj)
@@ -255,7 +250,7 @@ void World::Draw (
       
       
       // Calculate new direction of the object based on its angular velociy
-      vec3 v3AngularDisplacement = pObj ->m_v3AVelocity * dTimePassed;
+      vec3 v3AngularDisplacement = pObj ->m_v3AVelocity * deltaTime;
       pObj->m_v3Direction+=v3AngularDisplacement;
       if (i>5) {
       printf ("%d: m:%f whd:(%f,%f,%f) ", i, pObj->mass_fm, pObj->m_v3Size.x,
@@ -281,7 +276,7 @@ void World::Draw (
       mat4 model (1.0f);
       model = trans * scale * rot;
       if (pObj->m_VertexBuffer) {
-         mat4 MVP = projectionMatrix * viewMatrix * model;
+         mat4 MVP = ProjectionMatrix * ViewMatrix * model;
          glUniformMatrix4fv (matrixID, 1, GL_FALSE, &MVP [0][0]);
          glEnableVertexAttribArray (0);
          glBindBuffer (GL_ARRAY_BUFFER, pObj->m_VertexBuffer);
@@ -328,7 +323,7 @@ void World::Draw (
          mat4 model (1.0f);
          model = trans * scale * rot;
          if (rJObj .m_VertexBuffer) {
-            mat4 MVP = projectionMatrix * viewMatrix * model;
+            mat4 MVP = ProjectionMatrix * ViewMatrix * model;
             glUniformMatrix4fv (matrixID, 1, GL_FALSE, &MVP [0][0]);
             glEnableVertexAttribArray (0);
             glBindBuffer (GL_ARRAY_BUFFER, rJObj .m_VertexBuffer);
