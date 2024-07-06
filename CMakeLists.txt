@@ -38,11 +38,15 @@ include_directories(
 	external/glew-1.13.0/include/
 	.
 )
-
+link_directories(
+   /usr/local/lib/LASlib
+)
 set(ALL_LIBS
 	${OPENGL_LIBRARY}
 	glfw
 	GLEW_1130
+   LASlib
+   gmp
 )
 
 add_definitions(
@@ -53,6 +57,12 @@ add_definitions(
 	-D_CRT_SECURE_NO_WARNINGS
 )
 
+if (DEFINED _DEBUG)
+   ADD_DEFINITIONS(-D_DEBUG=${_DEBUG})
+   set (GCC_COVERAGE_COMPILE_FLAGS "${GCC_COVERAGE_COMPILE_FLAGS} -g -O0")
+   set (GCC_COVERAGE_LINK_FLAGS "${GCC_COVERAGE_LINK_FLAGS} -g -O0")
+endif ()
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
 
 # User playground
 add_executable(playground 
