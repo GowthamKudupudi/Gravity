@@ -16,6 +16,7 @@ extern double lastTime;
 extern double currentTime;
 extern float deltaTime;
 extern glm::vec3 direction;
+extern float theta;
 
 extern glm::mat4 ViewMatrix;
 extern glm::mat4 ProjectionMatrix;

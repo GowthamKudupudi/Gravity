@@ -43,7 +43,16 @@ void computeMatricesFromInputs(){
 	// Up vector
 	glm::vec3 up = glm::cross( right, direction );
 
-	// Move forward
+   // roll left
+	if (glfwGetKey( window, GLFW_KEY_W ) == GLFW_PRESS){
+      theta += 3.14/50;
+	}
+   // roll right
+	if (glfwGetKey( window, GLFW_KEY_R ) == GLFW_PRESS){
+      theta-=3.14/50;
+	}
+   up+=vec3(-sin(theta), -1+cos(theta), 0);
+   // Move forward
 	if (glfwGetKey( window, GLFW_KEY_E ) == GLFW_PRESS){
 		camPosition += direction * deltaTime * speed;
 	}
@@ -59,17 +68,18 @@ void computeMatricesFromInputs(){
 	if (glfwGetKey( window, GLFW_KEY_S ) == GLFW_PRESS){
 		camPosition -= right * deltaTime * speed;
 	}
-    if(camPosition.x>initialCamZPos)camPosition.x=initialCamZPos;
-    if(camPosition.y>initialCamZPos)camPosition.y=initialCamZPos;
-    if(camPosition.z>initialCamZPos)camPosition.z=initialCamZPos;
-    if(camPosition.x<-initialCamZPos)camPosition.x=-initialCamZPos;
-    if(camPosition.y<-initialCamZPos)camPosition.y=-initialCamZPos;
-    if(camPosition.z<-initialCamZPos)camPosition.z=-initialCamZPos;
+   // if(camPosition.x>initialCamZPos)camPosition.x=initialCamZPos;
+   // if(camPosition.y>initialCamZPos)camPosition.y=initialCamZPos;
+   // if(camPosition.z>initialCamZPos)camPosition.z=initialCamZPos;
+   // if(camPosition.x<-initialCamZPos)camPosition.x=-initialCamZPos;
+   // if(camPosition.y<-initialCamZPos)camPosition.y=-initialCamZPos;
+   // if(camPosition.z<-initialCamZPos)camPosition.z=-initialCamZPos;
 
 	float FoV = initialFoV;// - 5 * glfwGetMouseWheel(); // Now GLFW 3 requires setting up a callback for this. It's a bit too complicated for this beginner's tutorial, so it's disabled instead.
 
 	// Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
 	ProjectionMatrix = glm::perspective(glm::radians(FoV), width / height, minDisplayRange, maxDisplayRange);
+//	ProjectionMatrix = glm::ortho(0.0f, width/200.0f, 0.0f, height/200.0f, 0.1f, 100.0f);
 	// Camera matrix
 	ViewMatrix       = glm::lookAt(
 								camPosition,           // Camera is here

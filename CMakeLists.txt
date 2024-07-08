@@ -67,23 +67,23 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
 # User playground
 add_executable(playground 
 	playground/playground.cpp
-    playground/world.cpp
-    playground/world.hpp
-    playground/fragmentplayer.fragmentshader
-    playground/vertexplayer.vertexshader
-    playground/TextVertexShader.fragmentshader
-    playground/TextVertexShader.vertexshader
-    playground/Holstein.DDS
-    common/shader.cpp
+   playground/world.cpp
+   playground/world.hpp
+   playground/fragmentshader.glsl
+   playground/vertexshader.glsl
+   playground/TextVertexShader.fragmentshader
+   playground/TextVertexShader.vertexshader
+   playground/Holstein.DDS
+   common/shader.cpp
 	common/shader.hpp
-    common/texture.cpp
-    common/texture.hpp
-    common/controls.cpp
-    common/controls.hpp
-    common/text2D.cpp
-    common/text2D.hpp
-
+   common/texture.cpp
+   common/texture.hpp
+   common/controls.cpp
+   common/controls.hpp
+   common/text2D.cpp
+   common/text2D.hpp
 )
+
 target_link_libraries(playground
 	${ALL_LIBS}
 )

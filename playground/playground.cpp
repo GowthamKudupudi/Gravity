@@ -27,12 +27,15 @@
 // Include GLFW
 #include <glfw3.h>
 GLFWwindow* window;
-float width=800.0f;
-float height=600.0f;
+float width=1800.0f;
+float height=1600.0f;
 
 // Include GLM
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
+#include "common/controls.hpp"
+
 using namespace glm;
 using namespace std;
 using namespace CGAL;
@@ -54,12 +57,13 @@ typedef Delaunay_triangulation_2<PrjTrts, T2ds>                  TIN;
 float horizontalAngle = 3.14f;
 // Initial vertical angle : none
 float verticalAngle = 0.0f;
+float theta = (0.0f);
 // Initial Field of View
-float initialFoV = 45.0f; // Human eye 114
-float initialCamZPos = 20000.0f; // 20000.0 to look at earth
-float speed = 2500.0f; // 1500 km / second
+float initialFoV = 114.0f; //45.0f; // Human eye 114
+float initialCamZPos = 100.0f; // 20000.0 to look at earth
+float speed = 25.0f; // 1500 km / second
 float mouseSpeed = 0.005f;
-float minDisplayRange = 0.08f;     // 100m
+float minDisplayRange = 0.008f;     // 100m
 float maxDisplayRange = sqrt (pow (initialCamZPos, 2) * 3); // 20,000km
 glm::vec3 camPosition = glm::vec3 ( 0, 0, initialCamZPos );
 float G = 6.674 * pow (10,-20); // km3.kg-1.s-2
@@ -78,7 +82,6 @@ double lastShootTime = lastTime;
 //Tut5
 #include "common/texture.hpp"
 //Tut6
-#include "common/controls.hpp"
 #include "common/text2D.hpp"
 #include "world.hpp"
 
@@ -304,8 +307,8 @@ int main( void ) {
          }
          vecV3.push_back(v3);
          mapP3[p3]=i++;
-         if (i>=1000)
-            break;
+         // if (i>=1000)
+         //    break;
       }
    }
    printf("mapP3 size: %ld\n"
@@ -341,30 +344,33 @@ int main( void ) {
    GLuint pcVertexBuffer;
    glGenBuffers(1, &pcVertexBuffer);
    glBindBuffer(GL_ARRAY_BUFFER, pcVertexBuffer);
-   // glBufferData(GL_ARRAY_BUFFER, sizeof(vec3)*vecV3.size(),
-   //               &vecV3[0], GL_STATIC_DRAW);
-   glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*9, &gfTriangleBufferData[0],
-                GL_STATIC_DRAW);
+   glBufferData(GL_ARRAY_BUFFER, sizeof(vec3)*vecV3.size(),
+                 &vecV3[0], GL_STATIC_DRAW);
+   // glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*9, &gfTriangleBufferData[0],
+   //              GL_STATIC_DRAW);
    GLuint pcElmBuffer;
    glGenBuffers(1, &pcElmBuffer);
    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pcElmBuffer);
-   // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned)*vecElms.size(),
-   //              &vecElms[0], GL_STATIC_DRAW);
-   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned)*3,
-               &gfTriangleElementData[0], GL_STATIC_DRAW);
+   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned)*vecElms.size(),
+                &vecElms[0], GL_STATIC_DRAW);
+   // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned)*3,
+   //             &gfTriangleElementData[0], GL_STATIC_DRAW);
    glUniformMatrix4fv(zHalfMaxID, 1, GL_FALSE, &zHalfMax);
    
    glUseProgram (programID);
-   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
       
    do {
-      glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      lastTime = currentTime;
+      currentTime = glfwGetTime();
+      deltaTime = currentTime - lastTime;
       computeMatricesFromInputs();
+      glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
       mat4 scale (1.0f);
       mat4 rot (1.0f);
       mat4 trans (1.0f);
       rot = rotate (rot, vec3(0.0f));
-      scale = glm::scale (scale, vec3(1000));
+      scale = glm::scale (scale, vec3(1));
       trans = translate (mat4(1.0f), vec3(0.0f));
       
       mat4 model (1.0f);
@@ -377,8 +383,8 @@ int main( void ) {
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pcElmBuffer);
       glDrawElements(
          GL_TRIANGLES,      // mode
-//         vecElms.size(),    // count
-         3,
+         vecElms.size(),    // count
+//         3,
          GL_UNSIGNED_INT,   // type
          (void*)0           // element array buffer offset
       );
