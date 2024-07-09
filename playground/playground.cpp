@@ -57,7 +57,6 @@ typedef Delaunay_triangulation_2<PrjTrts, T2ds>                  TIN;
 float horizontalAngle = 3.14f;
 // Initial vertical angle : none
 float verticalAngle = 0.0f;
-float oldVA = 0.0f;
 float theta = (0.0f);
 // Initial Field of View
 float initialFoV = 114.0f; //45.0f; // Human eye 114
@@ -288,7 +287,7 @@ int main( void ) {
    vector<vec3> vecV3;
    vector<unsigned> vecElms;
    LASreadOpener lasreadopener;
-   lasreadopener.set_file_name("/home/Necktwi/workspace/displaz/SU785700.las");
+   lasreadopener.set_file_name("SU785700.las");
    LASreader* lasreader = lasreadopener.open();
    if (!lasreader) {
       printf("file not found!\n");
