@@ -38,9 +38,23 @@ include_directories(
 	external/glew-1.13.0/include/
 	.
 )
-link_directories(
-   /usr/local/lib/LASlib
-)
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+   link_directories(
+      /usr/local/lib/LASlib
+   )
+elseif (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+   include_directories(
+      external/las/inc
+      ../thirdparty/CGAL-5.6.1/include
+      ../thirdparty/boost_1_85_0
+   )
+   link_directories(
+      external/las/lib
+      ../thirdparty/boost_1_85_0/stage/lib
+      ../thirdparty/CGAL-5.6.1/auxiliary/gmp/lib
+   )
+endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+
 set(ALL_LIBS
 	${OPENGL_LIBRARY}
 	glfw
