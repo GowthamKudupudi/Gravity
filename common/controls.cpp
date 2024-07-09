@@ -6,6 +6,8 @@ extern GLFWwindow* window; // The "extern" keyword here is to access the variabl
 // Include GLM
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <mutex>
+
 using namespace glm;
 
 #include "controls.hpp"
@@ -13,7 +15,16 @@ using namespace glm;
 glm::mat4 ViewMatrix;
 glm::mat4 ProjectionMatrix;
 
-void computeMatricesFromInputs(){
+std::mutex scrlMtx;
+float scroll = 0.0f;
+
+void scroll_callback (GLFWwindow* window, double xoffset, double yoffset) {
+   scrlMtx.lock();
+   scroll=yoffset;
+   scrlMtx.unlock();
+}
+
+void computeMatricesFromInputs () {
 
 	
 	// Get mouse position
@@ -72,6 +83,13 @@ void computeMatricesFromInputs(){
 	if (glfwGetKey( window, GLFW_KEY_S ) == GLFW_PRESS){
 		camPosition -= right * deltaTime * speed;
 	}
+
+   scrlMtx.lock();
+   if (scroll!=0) {
+      camPosition += up*scroll;
+      scroll = 0.0f;
+   }
+   scrlMtx.unlock();
    // if(camPosition.x>initialCamZPos)camPosition.x=initialCamZPos;
    // if(camPosition.y>initialCamZPos)camPosition.y=initialCamZPos;
    // if(camPosition.z>initialCamZPos)camPosition.z=initialCamZPos;

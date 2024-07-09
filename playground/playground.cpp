@@ -87,6 +87,9 @@ double lastShootTime = lastTime;
 
 #define octahedron_HT 0.816496580927726
 #define EQ_TRIANGLE_HT 0.866025403784439
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+
 void NormalSmooth (
    const GLfloat* gfSolid, unsigned int uiSolidSize,
    GLfloat* gfSphere, unsigned int uiSphereSize,
@@ -300,7 +303,7 @@ int main( void ) {
    vec3 bboxMin;
    while (lasreader->read_point()) {
       if ((pt.classification | (pt.synthetic_flag << 5) |
-          (pt.keypoint_flag << 6) | (pt.withheld_flag << 7))!=2) {
+          (pt.keypoint_flag << 6) | (pt.withheld_flag << 7))==2) {
          Point3 p3(pt.get_x(), pt.get_y(), pt.get_z());
          vec3 v3(pt.get_x(), pt.get_y(), pt.get_z());
          if (!i)
@@ -345,6 +348,7 @@ int main( void ) {
           "bboxMax: %f,%f,%f\n"
           "bboxMin: %f,%f,%f\n", vecElms.size(), zHalfMax,
           bboxMax.x,bboxMax.y,bboxMax.z, bboxMin.x, bboxMin.y, bboxMin.z);
+   glfwSetScrollCallback(window, scroll_callback);
    GLuint pcVertexBuffer;
    glGenBuffers(1, &pcVertexBuffer);
    glBindBuffer(GL_ARRAY_BUFFER, pcVertexBuffer);
