@@ -33,6 +33,7 @@ float height=1600.0f;
 // Include GLM
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <FerryTimeStamp.h>
 
 #include "common/controls.hpp"
 
@@ -314,7 +315,7 @@ int main( void ) {
          }
          vecV3.push_back(v3);
          mapP3[p3]=i++;
-         if (i>=1000)
+         if (i>=100000)
             break;
       }
    }
@@ -323,9 +324,14 @@ int main( void ) {
           "sizeof(vec3): %u\n"
           "centroid: %f,%f,%f\n", mapP3.size(), sizeof(Point3), sizeof(vec3),
           centroid.x, centroid.y, centroid.z);
+   FerryTimeStamp ftStart, ftEnd;
+   ftStart.Update();
    TIN dsm(mapP3.begin(), mapP3.end());
    Mesh sm;
    CGAL::copy_face_graph(dsm, sm);
+   ftEnd.Update();
+   cout << "TriangulationTime: " << ftEnd - ftStart << endl;
+   cout << "TriangulationTime: " << ftEnd << "," << ftStart << endl;
    for (Mesh::Face_index fi : sm.faces()) {
       for (Mesh::Vertex_index vi:
               vertices_around_face(sm.halfedge(fi), sm)) {

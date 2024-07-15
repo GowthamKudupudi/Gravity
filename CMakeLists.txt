@@ -30,12 +30,37 @@ if(INCLUDE_DISTRIB)
 	add_subdirectory(distrib)
 endif(INCLUDE_DISTRIB)
 
+set(CMAKE_MODULE_PATH
+   "${CMAKE_CURRENT_SOURCE_DIR}/../ferrybase;${CMAKE_MODULE_PATH}"
+)
+message("CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
+include(TargetArch)
+target_architecture(TARGET_ARCH)
+message ("TARGET_ARCH: ${TARGET_ARCH}")
 
+string (
+   REPLACE ${CMAKE_CURRENT_SOURCE_DIR} "" SRC_RLTV_BLD_DIR
+   ${PROJECT_BINARY_DIR}
+)
+message ("SRC_RLTV_BLD_DIR: ${SRC_RLTV_BLD_DIR}")
+string (REPLACE "/Build" "" BUILD_TARGET ${SRC_RLTV_BLD_DIR})
+if (${SRC_RLTV_BLD_DIR})
+   string (REPLACE "/build" "" BUILD_TARGET ${BUILD_TARGET})
+endif ()
+message ("BUILD_TARGET: ${BUILD_TARGET}")
+
+add_subdirectory (
+   ${CMAKE_CURRENT_SOURCE_DIR}/../ferrybase
+   ${CMAKE_CURRENT_SOURCE_DIR}/../ferrybase/${SRC_RLTV_BLD_DIR}
+)
 
 include_directories(
 	external/glfw-3.1.2/include/GLFW/
 	external/glm-0.9.7.1/
 	external/glew-1.13.0/include/
+   ${CMAKE_CURRENT_SOURCE_DIR}/../ferrybase
+   ${CMAKE_CURRENT_SOURCE_DIR}/../ferrybase${BUILD_TARGET} 
+   ${CMAKE_CURRENT_SOURCE_DIR}/..
 	.
 )
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -54,6 +79,9 @@ elseif (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
       ../thirdparty/CGAL-5.6.1/auxiliary/gmp/lib
    )
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+link_directories (
+   "${CMAKE_CURRENT_SOURCE_DIR}/../ferrybase/${BLD_DIR}"
+)
 
 set(ALL_LIBS
 	${OPENGL_LIBRARY}
@@ -61,6 +89,7 @@ set(ALL_LIBS
 	GLEW_1130
    LASlib
    gmp
+   ferrybase
 )
 
 add_definitions(
