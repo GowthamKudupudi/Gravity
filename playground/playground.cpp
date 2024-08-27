@@ -27,8 +27,8 @@
 // Include GLFW
 #include <glfw3.h>
 GLFWwindow* window;
-float width=800.0f*2;
-float height=600.0f*2;
+float width=800.0f;
+float height=600.0f;
 
 // Include GLM
 #include <glm/glm.hpp>
@@ -293,90 +293,90 @@ int main( void ) {
    vector<vec3> vecV3;
    vector<unsigned> vecElms;
    float zHalfMax;
-   LASreadOpener lasreadopener;
-   lasreadopener.set_file_name("NEONDSSampleLiDARPointCloud.las");
-   LASreader* lasreader = lasreadopener.open();
-   if (!lasreader) {
-      printf("file not found!\n");
-      return 0;
-   }
-   LASpoint& pt = lasreader->point;
-   size_t i=0;
-   vec3 centroid;
-   vec3 bboxMax;
-   vec3 bboxMin;
-   while (lasreader->read_point()) {
-      if ((pt.classification | (pt.synthetic_flag << 5) |
-          (pt.keypoint_flag << 6) | (pt.withheld_flag << 7))==2) {
-         Point3 p3(pt.get_x(), pt.get_y(), pt.get_z());
-         vec3 v3(pt.get_x(), pt.get_y(), pt.get_z());
-         if (!i)
-            centroid=v3;
-         else {
-            centroid+=v3;
-            centroid/=2;
-         }
-         vecV3.push_back(v3);
-         mapP3[p3]=i++;
-         // if (i>=100000)
-         //    break;
-      }
-   }
-   printf("mapP3 size: %ld\n"
-          "sizeof(Point3): %u\n"
-          "sizeof(vec3): %u\n"
-          "centroid: %f,%f,%f\n", mapP3.size(), sizeof(Point3), sizeof(vec3),
-          centroid.x, centroid.y, centroid.z);
-   FerryTimeStamp ftStart, ftEnd;
-   ftStart.Update();
-   TIN dsm(mapP3.begin(), mapP3.end());
-   Mesh sm;
-   CGAL::copy_face_graph(dsm, sm);
-   ftEnd.Update();
-   cout << "TriangulationTime: " << ftEnd - ftStart << endl;
-   cout << "TriangulationTime: " << ftEnd << "," << ftStart << endl;
-   for (Mesh::Face_index fi : sm.faces()) {
-      for (Mesh::Vertex_index vi:
-              vertices_around_face(sm.halfedge(fi), sm)) {
-         vecElms.push_back(mapP3[sm.point(vi)]);
-      }
-   }
-   for (unsigned i=0; i<vecV3.size(); ++i) {
-      vecV3[i]-=centroid;
-      bboxMax.x=bboxMax.x>vecV3[i].x?bboxMax.x:vecV3[i].x;
-      bboxMin.x=bboxMin.x<vecV3[i].x?bboxMin.x:vecV3[i].x;
-      bboxMax.y=bboxMax.x>vecV3[i].y?bboxMax.y:vecV3[i].y;
-      bboxMin.y=bboxMin.x<vecV3[i].y?bboxMin.y:vecV3[i].y;
-      bboxMax.z=bboxMax.z>vecV3[i].z?bboxMax.z:vecV3[i].z;
-      bboxMin.z=bboxMin.z<vecV3[i].z?bboxMin.z:vecV3[i].z;
-   }
-   zHalfMax = bboxMax.z>-bboxMin.z?bboxMax.z:-bboxMin.z;
-   zHalfMax/=2;
-   printf("vecElms.size: %u\n"
-          "zHalfMax: %f\n"
-          "bboxMax: %f,%f,%f\n"
-          "bboxMin: %f,%f,%f\n", vecElms.size(), zHalfMax,
-          bboxMax.x,bboxMax.y,bboxMax.z, bboxMin.x, bboxMin.y, bboxMin.z);
+   // LASreadOpener lasreadopener;
+   // lasreadopener.set_file_name("NEONDSSampleLiDARPointCloud.las");
+   // LASreader* lasreader = lasreadopener.open();
+   // if (!lasreader) {
+   //    printf("file not found!\n");
+   //    return 0;
+   // }
+   // LASpoint& pt = lasreader->point;
+   // size_t i=0;
+   // vec3 centroid;
+   // vec3 bboxMax;
+   // vec3 bboxMin;
+   // while (lasreader->read_point()) {
+   //    if ((pt.classification | (pt.synthetic_flag << 5) |
+   //        (pt.keypoint_flag << 6) | (pt.withheld_flag << 7))==2) {
+   //       Point3 p3(pt.get_x(), pt.get_y(), pt.get_z());
+   //       vec3 v3(pt.get_x(), pt.get_y(), pt.get_z());
+   //       if (!i)
+   //          centroid=v3;
+   //       else {
+   //          centroid+=v3;
+   //          centroid/=2;
+   //       }
+   //       vecV3.push_back(v3);
+   //       mapP3[p3]=i++;
+   //       // if (i>=100000)
+   //       //    break;
+   //    }
+   // }
+   // printf("mapP3 size: %ld\n"
+   //        "sizeof(Point3): %u\n"
+   //        "sizeof(vec3): %u\n"
+   //        "centroid: %f,%f,%f\n", mapP3.size(), sizeof(Point3), sizeof(vec3),
+   //        centroid.x, centroid.y, centroid.z);
+   // FerryTimeStamp ftStart, ftEnd;
+   // ftStart.Update();
+   // TIN dsm(mapP3.begin(), mapP3.end());
+   // Mesh sm;
+   // CGAL::copy_face_graph(dsm, sm);
+   // ftEnd.Update();
+   // cout << "TriangulationTime: " << ftEnd - ftStart << endl;
+   // cout << "TriangulationTime: " << ftEnd << "," << ftStart << endl;
+   // for (Mesh::Face_index fi : sm.faces()) {
+   //    for (Mesh::Vertex_index vi:
+   //            vertices_around_face(sm.halfedge(fi), sm)) {
+   //       vecElms.push_back(mapP3[sm.point(vi)]);
+   //    }
+   // }
+   // for (unsigned i=0; i<vecV3.size(); ++i) {
+   //    vecV3[i]-=centroid;
+   //    bboxMax.x=bboxMax.x>vecV3[i].x?bboxMax.x:vecV3[i].x;
+   //    bboxMin.x=bboxMin.x<vecV3[i].x?bboxMin.x:vecV3[i].x;
+   //    bboxMax.y=bboxMax.x>vecV3[i].y?bboxMax.y:vecV3[i].y;
+   //    bboxMin.y=bboxMin.x<vecV3[i].y?bboxMin.y:vecV3[i].y;
+   //    bboxMax.z=bboxMax.z>vecV3[i].z?bboxMax.z:vecV3[i].z;
+   //    bboxMin.z=bboxMin.z<vecV3[i].z?bboxMin.z:vecV3[i].z;
+   // }
+   // zHalfMax = bboxMax.z>-bboxMin.z?bboxMax.z:-bboxMin.z;
+   // zHalfMax/=2;
+   // printf("vecElms.size: %u\n"
+   //        "zHalfMax: %f\n"
+   //        "bboxMax: %f,%f,%f\n"
+   //        "bboxMin: %f,%f,%f\n", vecElms.size(), zHalfMax,
+   //        bboxMax.x,bboxMax.y,bboxMax.z, bboxMin.x, bboxMin.y, bboxMin.z);
    glfwSetScrollCallback(window, scroll_callback);
    GLuint pcVertexBuffer;
    glGenBuffers(1, &pcVertexBuffer);
    glBindBuffer(GL_ARRAY_BUFFER, pcVertexBuffer);
-   glBufferData(GL_ARRAY_BUFFER, sizeof(vec3)*vecV3.size(),
-                 &vecV3[0], GL_STATIC_DRAW);
-   // glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*3*3, &gfTriangleBufferData[0],
-   //              GL_STATIC_DRAW);
+   // glBufferData(GL_ARRAY_BUFFER, sizeof(vec3)*vecV3.size(),
+   //               &vecV3[0], GL_STATIC_DRAW);
+   glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*3*3, &gfTriangleBufferData[0],
+                GL_STATIC_DRAW);
    GLuint pcElmBuffer;
    glGenBuffers(1, &pcElmBuffer);
    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pcElmBuffer);
-   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned)*vecElms.size(),
-                &vecElms[0], GL_STATIC_DRAW);
-   // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned)*3,
-   //             &gfTriangleElementData[0], GL_STATIC_DRAW);
+   // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned)*vecElms.size(),
+   //              &vecElms[0], GL_STATIC_DRAW);
+   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned)*3,
+               &gfTriangleElementData[0], GL_STATIC_DRAW);
    glUniformMatrix4fv(zHalfMaxID, 1, GL_FALSE, &zHalfMax);
    
    glUseProgram(programID);
-   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-   //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+   //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
    glfwSetCursorPos(window, ::width/2, height/2);
    int iii=100;
    do {
@@ -406,8 +406,8 @@ int main( void ) {
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pcElmBuffer);
       glDrawElements(
          GL_TRIANGLES,      // mode
-         vecElms.size(),    // count
-//         3,
+//         vecElms.size(),    // count
+         3,
          GL_UNSIGNED_INT,   // type
          (void*)0           // element array buffer offset
       );
