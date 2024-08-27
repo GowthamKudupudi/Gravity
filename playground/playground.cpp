@@ -162,7 +162,7 @@ int main( void ) {
    GLuint programID = LoadShaders (
       "playground.vertexshader",
       "playground.fragmentshader",
-      "playground.geometryshader"
+      nullptr//"playground.geometryshader"
    );
    GLuint MatrixID = glGetUniformLocation ( programID, "MVP");
    
