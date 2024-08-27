@@ -159,8 +159,11 @@ int main( void ) {
    glGenVertexArrays (1, &VertexArrayID);
    glBindVertexArray (VertexArrayID);
    
-   GLuint programID = LoadShaders ( "vertexplayer.vertexshader",
-                                    "fragmentplayer.fragmentshader" );
+   GLuint programID = LoadShaders (
+      "playground.vertexshader",
+      "playground.fragmentshader",
+      "playground.geometryshader"
+   );
    GLuint MatrixID = glGetUniformLocation ( programID, "MVP");
    
    
