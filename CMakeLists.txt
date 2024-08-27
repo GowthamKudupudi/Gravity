@@ -112,10 +112,10 @@ add_executable(playground
 	playground/playground.cpp
    playground/world.cpp
    playground/world.hpp
-   playground/fragmentshader.glsl
-   playground/vertexshader.glsl
-   playground/TextVertexShader.fragmentshader
-   playground/TextVertexShader.vertexshader
+   playground/playgroundfragment.glsl
+   playground/playgroundvertex.glsl
+   playground/TextFragment.glsl
+   playground/TextVertex.glsl
    playground/Holstein.DDS
    common/shader.cpp
 	common/shader.hpp
