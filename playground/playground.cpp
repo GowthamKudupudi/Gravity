@@ -160,9 +160,9 @@ int main( void ) {
    glBindVertexArray (VertexArrayID);
    
    GLuint programID = LoadShaders (
-      "playground.vertexshader",
-      "playground.fragmentshader",
-      nullptr//"playground.geometryshader"
+      "playgroundvertex.glsl",
+      "playgroundfragment.glsl",
+      nullptr//"playgroundgeometry.glsl"
    );
    GLuint MatrixID = glGetUniformLocation ( programID, "MVP");
    

@@ -59,11 +59,11 @@ add_executable(playground
 	playground/playground.cpp
    playground/world.cpp
    playground/world.hpp
-   playground/playground.fragmentshader
-   playground/playground.vertexshader
-   playground/playground.geometryshader
-   playground/TextVertexShader.fragmentshader
-   playground/TextVertexShader.vertexshader
+   playground/playgroundfragment.glsl
+   playground/playgroundvertex.glsl
+   playground/playgroundgeometry.glsl
+   playground/TextFragment.glsl
+   playground/TextVertex.glsl
    playground/Holstein.DDS
    common/shader.cpp
 	common/shader.hpp
