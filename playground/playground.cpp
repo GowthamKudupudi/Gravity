@@ -56,8 +56,10 @@ typedef Delaunay_triangulation_2<PrjTrts, T2ds>                  TIN;
 // Initial position : on +Z
 // Initial horizontal angle : toward -Z
 float horizontalAngle = 3.14f;
+//float horizontalAngle = 3.14f/4;
 // Initial vertical angle : none
 float verticalAngle = 0.0f;
+//float verticalAngle = 3.14f/16;
 float theta = (0.0f);
 // Initial Field of View
 float initialFoV = 114.0f; //45.0f; // Human eye 114
@@ -372,25 +374,31 @@ int main( void ) {
                &gfTriangleElementData[0], GL_STATIC_DRAW);
    glUniformMatrix4fv(zHalfMaxID, 1, GL_FALSE, &zHalfMax);
    
-   glUseProgram (programID);
+   glUseProgram(programID);
    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+   glfwSetCursorPos(window, ::width/2, height/2);
+   int iii=100;
    do {
       lastTime = currentTime;
       currentTime = glfwGetTime();
       deltaTime = currentTime - lastTime;
+      if (iii) {
+         glfwSetCursorPos(window, ::width/2, height/2);
+         --iii;
+      }
       computeMatricesFromInputs();
-      glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-      mat4 scale (1.0f);
-      mat4 rot (1.0f);
-      mat4 trans (1.0f);
-      rot = rotate (rot, vec3(0.0f));
-      scale = glm::scale (scale, vec3(1));
-      trans = translate (mat4(1.0f), vec3(0.0f));
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      mat4 scale(1.0f);
+      mat4 rot(1.0f);
+      mat4 trans(1.0f);
+      rot = rotate(rot, vec3(0.0f));
+      scale = glm::scale(scale, vec3(1));
+      trans = translate(mat4(1.0f), vec3(0.0f));
       
-      mat4 model (1.0f);
+      mat4 model(1.0f);
       model = trans * scale * rot;
-      mat4 MVP(1.0f);// = ProjectionMatrix * ViewMatrix * model;
+      mat4 MVP = ProjectionMatrix * ViewMatrix * model;
       glUniformMatrix4fv (MatrixID, 1, GL_FALSE, &MVP[0][0]);
       glEnableVertexAttribArray (0);
       glBindBuffer (GL_ARRAY_BUFFER, pcVertexBuffer);
@@ -404,12 +412,12 @@ int main( void ) {
          (void*)0           // element array buffer offset
       );
       glDisableVertexAttribArray(0);
-      glfwSwapBuffers (window);
-      glfwPollEvents ();
+      glfwSwapBuffers(window);
+      glfwPollEvents();
    } while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
             glfwWindowShouldClose(window) == 0);
-   glDeleteBuffers (1, &pcElmBuffer);
-   glDeleteBuffers (1, &pcVertexBuffer);
+   glDeleteBuffers(1, &pcElmBuffer);
+   glDeleteBuffers(1, &pcVertexBuffer);
    return 0;
    static const unsigned int uiNumSphericalVertices = 3*8*4*4*4*4*4;
    static const unsigned int uiNumAstVertices = 3*8*4*4*4;

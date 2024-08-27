@@ -34,14 +34,14 @@ void computeMatricesFromInputs () {
 	// Reset mouse position for next frame
 	glfwSetCursorPos(window, width/2, height/2);
 
-	// Compute new orientation
+   // Compute new orientation
    horizontalAngle += mouseSpeed * float(width/2 - xpos);
 	verticalAngle   += mouseSpeed * float(height/2 - ypos);
    if (verticalAngle>=3.14f/4)
       verticalAngle=3.14f/4;
    else if (verticalAngle<=-3.14f/4)
       verticalAngle=-3.14f/4;
-	// Direction : Spherical coordinates to Cartesian coordinates conversion
+   // Direction : Spherical coordinates to Cartesian coordinates conversion
 	direction=vec3(
 		cos(verticalAngle) * sin(horizontalAngle), 
 		sin(verticalAngle),
@@ -51,36 +51,38 @@ void computeMatricesFromInputs () {
 	// Right vector
 	glm::vec3 right = glm::vec3(
 		sin(horizontalAngle - 3.14f/2.0f), 
+//		sin(3.14f/2.0f - horizontalAngle), 
 		0,
 		cos(horizontalAngle - 3.14f/2.0f)
-	);
+//		cos(3.14f/2.0f - horizontalAngle)
+   );
 	
 	// Up vector
-	glm::vec3 up = glm::cross( right, direction );
+	glm::vec3 up = glm::cross(right, direction);
 
    // roll left
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS){
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
       theta += theta>=3.14f/4?0:3.14/50;
 	}
    // roll right
-	if (glfwGetKey( window, GLFW_KEY_R ) == GLFW_PRESS){
+	if (glfwGetKey( window, GLFW_KEY_R ) == GLFW_PRESS) {
       theta-= theta<=-3.14f/4?0:3.14/50;
 	}
    up+=vec3(-sin(theta), -1+cos(theta), 0);
    // Move forward
-	if (glfwGetKey( window, GLFW_KEY_E ) == GLFW_PRESS){
+	if (glfwGetKey( window, GLFW_KEY_E ) == GLFW_PRESS) {
 		camPosition += direction * deltaTime * speed;
 	}
 	// Move backward
-	if (glfwGetKey( window, GLFW_KEY_D ) == GLFW_PRESS){
+	if (glfwGetKey( window, GLFW_KEY_D ) == GLFW_PRESS) {
 		camPosition -= direction * deltaTime * speed;
 	}
 	// Strafe right
-	if (glfwGetKey( window, GLFW_KEY_F ) == GLFW_PRESS){
+	if (glfwGetKey( window, GLFW_KEY_F ) == GLFW_PRESS) {
 		camPosition += right * deltaTime * speed;
 	}
 	// Strafe left
-	if (glfwGetKey( window, GLFW_KEY_S ) == GLFW_PRESS){
+	if (glfwGetKey( window, GLFW_KEY_S ) == GLFW_PRESS) {
 		camPosition -= right * deltaTime * speed;
 	}
 
