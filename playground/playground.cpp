@@ -202,7 +202,8 @@ int main( void ) {
    glBindVertexArray (VertexArrayID);
    
    GLuint programID = LoadShaders("playgroundvertex.glsl",
-                                  "playgroundfragment.glsl");
+                                  "playgroundfragment.glsl",
+                                  "playgroundgeom.glsl");
    GLuint MatrixID = glGetUniformLocation(programID, "MVP");
    GLuint zHalfMaxID = glGetUniformLocation(programID, "zHalfMax");
    
