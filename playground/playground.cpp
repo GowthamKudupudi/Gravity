@@ -206,6 +206,7 @@ int main( void ) {
                                   "playgroundgeom.glsl");
    GLuint MatrixID = glGetUniformLocation(programID, "MVP");
    GLuint zHalfMaxID = glGetUniformLocation(programID, "zHalfMax");
+   GLuint MagnitudeID = glGetUniformLocation(programID, "magnitude");
    
    static const GLfloat g_vertex_buffer_data [] = {
       -0.5f, -1.0f, -1.0f,
@@ -290,6 +291,22 @@ int main( void ) {
       1.0f, 0.0f, 0.0f,
       1.0f, 0.0f, 0.0f
    };
+   constexpr float th = 0.38564064605510184;//4*pow(3.0, 0.5)/5-1;
+   constexpr float tb = 0.8485281374238571; //3*pow(2.0, 0.5)/5;
+   constexpr float zb = 0.2886751345948129; //1/(2*pow(3.0, 0.5));
+   constexpr float zc = 0.5773502691896258; //1/pow(3.0, 0.5);
+   static const GLfloat gfTetraBufferData [] = {
+       0.0f,  1.0f, 0.0f,
+       tb,    -th,  zb,
+       -tb,   -th,  zb,
+       0,     -th,  -zc
+   };
+   static const unsigned gfTetraElementData [] = {
+      0, 1, 2,
+      2, 3, 0,
+      0, 3, 1,
+      1, 3, 2
+   };
    unordered_map<Point3, unsigned> mapP3;
    vector<vec3> vecV3;
    vector<unsigned> vecElms;
@@ -364,22 +381,31 @@ int main( void ) {
    glBindBuffer(GL_ARRAY_BUFFER, pcVertexBuffer);
    // glBufferData(GL_ARRAY_BUFFER, sizeof(vec3)*vecV3.size(),
    //               &vecV3[0], GL_STATIC_DRAW);
-   glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*3*3, &gfTriangleBufferData[0],
+   // glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*3*3, &gfTriangleBufferData[0],
+   //              GL_STATIC_DRAW);
+   glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*3*4,
+                &gfTetraBufferData[0],
                 GL_STATIC_DRAW);
    GLuint pcElmBuffer;
    glGenBuffers(1, &pcElmBuffer);
    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pcElmBuffer);
    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned)*vecElms.size(),
    //              &vecElms[0], GL_STATIC_DRAW);
-   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned)*3,
-               &gfTriangleElementData[0], GL_STATIC_DRAW);
-   glUniformMatrix4fv(zHalfMaxID, 1, GL_FALSE, &zHalfMax);
+   // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned)*3,
+   //             &gfTriangleElementData[0], GL_STATIC_DRAW);
+   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned)*3*4,
+               &gfTetraElementData[0], GL_STATIC_DRAW);
+   
    
    glUseProgram(programID);
-   //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+   //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+   //glPolygonMode(GL_BACK, GL_LINE);
    glfwSetCursorPos(window, ::width/2, height/2);
    int iii=100;
+   glUniform1f(zHalfMaxID, zHalfMax);
+   float magnitude = 3.0;
+   glUniform1f(MagnitudeID, magnitude);
    do {
       lastTime = currentTime;
       currentTime = glfwGetTime();
@@ -401,6 +427,7 @@ int main( void ) {
       model = trans * scale * rot;
       mat4 MVP = ProjectionMatrix * ViewMatrix * model;
       glUniformMatrix4fv (MatrixID, 1, GL_FALSE, &MVP[0][0]);
+      glUniform1f(MagnitudeID, (sin(currentTime)+1/2.0)*magnitude);
       glEnableVertexAttribArray (0);
       glBindBuffer (GL_ARRAY_BUFFER, pcVertexBuffer);
       glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
@@ -408,7 +435,9 @@ int main( void ) {
       glDrawElements(
          GL_TRIANGLES,      // mode
 //         vecElms.size(),    // count
-         3,
+//         3,
+//         sizeof(gfTetraElementData),
+         12,
          GL_UNSIGNED_INT,   // type
          (void*)0           // element array buffer offset
       );

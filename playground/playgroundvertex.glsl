@@ -11,14 +11,17 @@ layout(location = 0) in vec3 vertexPosition_modelspace;
 
 uniform mat4 MVP;
 uniform float zHalfMax;
+uniform float magnitude;
 
 out mat4 MVPgeom;
+out float magGeom;
 
 void main(){
    //Tut2
    //gl_Position = MVP * vec4(vertexPosition_modelspace,1);
    gl_Position = vec4(vertexPosition_modelspace, 1);
    MVPgeom = MVP;
+   magGeom = magnitude;
    //Tut4
    //float color = 3*(vertexPosition_modelspace.z+zHalfMax)/(2*zHalfMax)-1;
    /* fragmentColor.x=color>1?0:color; */

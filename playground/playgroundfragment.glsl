@@ -10,8 +10,7 @@
 //Tut2
 out vec3 color;
 
-void main()
-{
+void main() {
 
 //        //Tut2
 //        color = vec3(1,0,0);
