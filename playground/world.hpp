@@ -95,7 +95,7 @@ public:
       vec3 v3Velocity = vec3(), vec3 v3AVelocity = vec3()
    );
    
-   static void Draw (GLuint programID, GLuint matrixID);
+   static void Draw (GLuint programID, GLuint mID, GLuint vpID);
    static void stick_objects (Object* pObj1, Object* pToObj2,
       vec3 v3AtPos,vec3 v3InDirection);
 

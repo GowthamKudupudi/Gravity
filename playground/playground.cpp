@@ -28,12 +28,14 @@ float initialFoV = 45.0f; // Human eye 114
 float initialCamZPos = 20000.0f; // 20000.0 to look at earth
 float speed = 2500.0f; // 1500 km / second
 float mouseSpeed = 0.005f;
-float minDisplayRange = 0.08f;     // 100m
-float maxDisplayRange = sqrt (pow (initialCamZPos, 2) * 3); // 20,000km
-glm::vec3 camPosition = glm::vec3 ( 0, 0, initialCamZPos );
-float G = 6.674 * pow (10,-20); // km3.kg-1.s-2
-float D = 5510 * pow (10,9); // kg.km-3
-float WD = 1000 * pow (10,9); // kg.km-3
+float minDisplayRange = 0.08f;     // 100m near clipping plane
+// far clipping plane
+float maxDisplayRange = sqrt(pow(initialCamZPos, 2) * 3); // 20,000km
+glm::vec3 camPosition = glm::vec3(0, 0, initialCamZPos);
+glm::vec3 sunPosition = glm::vec3(initialCamZPos,0,0);
+float G = 6.674 * pow(10,-20); // km3.kg-1.s-2
+float D = 5510 * pow(10,9); // kg.km-3
+float WD = 1000 * pow(10,9); // kg.km-3
 float R = 6000;//6371; //km
 glm::vec3 direction;
 double lastTime = glfwGetTime();
@@ -53,6 +55,7 @@ double lastShootTime = lastTime;
 
 #define octahedron_HT 0.816496580927726
 #define EQ_TRIANGLE_HT 0.866025403784439
+//splits a triangle into 4 non planar triangles
 void NormalSmooth (
    const GLfloat* gfSolid, unsigned int uiSolidSize,
    GLfloat* gfSphere, unsigned int uiSphereSize,
@@ -60,9 +63,8 @@ void NormalSmooth (
 ) {
    if (uiSphereSize < (pow(4,iRegression)*uiSolidSize)) return;
    int i=0,j=0;
-   unsigned int uiTempSolidFillSize=uiSolidSize;
-   unsigned int uiTempSolidSize=uiSphereSize;
-   GLfloat* gfTempSolid = (GLfloat*)malloc(uiTempSolidSize*sizeof(*gfSolid));
+   unsigned int uiTempSolidFillSize=uiSolidSize;//total coordinates
+   GLfloat* gfTempSolid = (GLfloat*)malloc(uiSphereSize*sizeof(*gfSolid));
    memcpy(gfTempSolid, gfSolid, uiTempSolidFillSize*sizeof(*gfSolid));
    GLfloat gfTempTriangle[3*3];
    for (int r = 0; r < iRegression; ++r) {
@@ -76,12 +78,12 @@ void NormalSmooth (
          for (k=0; k<3; ++k) {
             // for each dimension
             gfLen = 0;
-            for (n=0; n < usDimensions; n++) {
+            for (n=0; n < usDimensions; ++n) {
                gfTempTriangle[3*k+n] = gfTempSolid[(3*k)+i+n] +
-               gfTempSolid[3*((k+1)%3)+i+n];
-               gfLen += pow (gfTempTriangle [3*k+n], 2);
+                  gfTempSolid[3*((k+1)%3)+i+n];
+               gfLen += pow(gfTempTriangle[3*k+n], 2);
             }
-            gfLen = sqrt (gfLen);
+            gfLen = sqrt(gfLen);
             // normalize length
             for (n=0; n < usDimensions; ++n) gfTempTriangle[3*k+n]/=gfLen;
          }
@@ -90,9 +92,9 @@ void NormalSmooth (
          for (k=0; k<3; ++k) {
             // at each dimension
             for (n = 0; n < 3; ++n) {
-               gfSphere[j+n]=gfTempSolid[i+3*((k+1)%3)+n];
+               gfSphere[j+n]=gfTempSolid[i+3*(k%3)+n];
                gfSphere[j+3+n]=gfTempTriangle[3*k+n];
-               gfSphere[j+6+n]=gfTempTriangle[3*((k+1)%3)+n];
+               gfSphere[j+6+n]=gfTempTriangle[3*((k+2)%3)+n];
             }
             j+=9;
          }
@@ -102,67 +104,70 @@ void NormalSmooth (
          i += 9;
       }
       uiTempSolidFillSize=j;
-      memcpy (gfTempSolid, gfSphere, uiTempSolidFillSize*sizeof(*gfTempSolid));
+      memcpy(gfTempSolid, gfSphere, uiTempSolidFillSize*sizeof(*gfTempSolid));
    }
+   free(gfTempSolid);
 }
 
-int main( void ) {
-   if( !glfwInit() ) {
-      fprintf( stderr, "Failed to initialize GLFW\n" );
+int main (void) {
+   if (!glfwInit()) {
+      fprintf(stderr, "Failed to initialize GLFW\n");
       getchar();
       return -1;
    }
    
-   glfwWindowHint (GLFW_SAMPLES, 4);
-   glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 3);
-   glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 3);
+   glfwWindowHint(GLFW_SAMPLES, 4);
+   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
    // To make MacOS happy; should not be needed
-   glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-   glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
    
-   window = glfwCreateWindow
-   ((int)width, (int)height, "Playground", NULL, NULL);
-   if ( window == NULL ) {
-      fprintf ( stderr, "Failed to open GLFW window. If you have an Intel GPU,"
+   window = glfwCreateWindow((int)width, (int)height, "Playground", NULL,
+                             NULL);
+   if (window==NULL) {
+      fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU,"
       "they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
-      getchar ();
-      glfwTerminate ();
+      getchar();
+      glfwTerminate();
       return -1;
    }
-   glfwMakeContextCurrent (window);
-   World* pWorld = World::create_world (window);
+   glfwMakeContextCurrent(window);
+   World* pWorld = World::create_world(window);
    glewExperimental = true;
    if (glewInit() != GLEW_OK) {
-      fprintf (stderr, "Failed to initialize GLEW\n");
-      getchar ();
-      glfwTerminate ();
+      fprintf(stderr, "Failed to initialize GLEW\n");
+      getchar();
+      glfwTerminate();
       return -1;
    }
    
-   glfwSetInputMode (window, GLFW_STICKY_KEYS, GL_TRUE);
+   glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
    //tut6
    // Hide the mouse and enable unlimited mouvement
-   glfwSetInputMode (window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
    // Set the mouse at the center of the screen
-   glfwPollEvents ();
-   glfwSetCursorPos (window, width/2, height/2);
+   glfwPollEvents();
+   glfwSetCursorPos(window, width/2, height/2);
    
    // Dark blue background
-   glClearColor (0.0f, 0.0f, 0.4f, 0.0f);
+   glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
    
    // Enable depth test
-   glEnable (GL_DEPTH_TEST);
+   glEnable(GL_DEPTH_TEST);
    // Accept fragment if it closer to the camera than the former one
-   glDepthFunc (GL_LESS);
-   
+   glDepthFunc(GL_LESS);
+   glEnable(GL_CULL_FACE);
    GLuint VertexArrayID;
-   glGenVertexArrays (1, &VertexArrayID);
-   glBindVertexArray (VertexArrayID);
+   glGenVertexArrays(1, &VertexArrayID);
+   glBindVertexArray(VertexArrayID);
    
-   GLuint programID = LoadShaders ( "vertexplayer.vertexshader",
-                                    "fragmentplayer.fragmentshader" );
-   GLuint MatrixID = glGetUniformLocation ( programID, "MVP");
-   
+   GLuint programID = LoadShaders("playgroundvertex.glsl",
+                                  "playgroundfragment.glsl",
+                                  "playgroundgeom.glsl");
+   GLuint MID = glGetUniformLocation( programID, "M");
+   GLuint VPID = glGetUniformLocation( programID, "VP");
+   GLuint magnitudeID = glGetUniformLocation( programID, "magnitude");
    
    static const GLfloat g_vertex_buffer_data [] = {
       -0.5f, -1.0f, -1.0f,
@@ -222,30 +227,37 @@ int main( void ) {
        0.0f, 0.0f,-1.0f,
       -1.0f, 0.0f, 0.0f,
        0.0f,-1.0f, 0.0f,
+       0.0f, 0.0f, 1.0f,
       -1.0f, 0.0f, 0.0f,
-       0.0f, 0.0f, 1.0f,
-       0.0f,-1.0f, 0.0f,
-       0.0f, 0.0f, 1.0f,
-       1.0f, 0.0f, 0.0f,
        0.0f,-1.0f, 0.0f,
        1.0f, 0.0f, 0.0f,
-       0.0f, 0.0f,-1.0f,
+       0.0f, 0.0f, 1.0f,
        0.0f,-1.0f, 0.0f,
        0.0f, 0.0f,-1.0f,
-      -1.0f, 0.0f, 0.0f
+       1.0f, 0.0f, 0.0f,
+       0.0f,-1.0f, 0.0f,
+       -1.0f, 0.0f, 0.0f,
+       0.0f, 0.0f,-1.0f
    };
-   static const unsigned int uiNumSphericalVertices = 3*8*4*4*4*4*4;
+   static const unsigned int uiNumOctahedronVertices = 3*8;
+   static const unsigned int uiNumEarthVertices = 3*8*4*4*4*4*4;
    static const unsigned int uiNumAstVertices = 3*8*4*4*4;
-   GLfloat gfSphereVertexBufferData [3*uiNumSphericalVertices];
-   NormalSmooth (g_octahedron_vertex_buffer_data, 3*3*8,
-                 gfSphereVertexBufferData, 3*uiNumSphericalVertices, 5);
+   GLfloat gfEarthVertexBufferData [3*uiNumEarthVertices];
+//   static const GLfloat* gfEarthVertexBufferData =
+//      g_octahedron_vertex_buffer_data;
+   NormalSmooth(g_octahedron_vertex_buffer_data, 3*uiNumOctahedronVertices,
+                gfEarthVertexBufferData, 3*uiNumEarthVertices,
+                log(uiNumEarthVertices/uiNumOctahedronVertices)/log(4));
+   //(uiNumEarthVertices/uiNumOctahedronVertices)/4);
+//   gfEarthVertexBufferData, 3*3*8, 5);
    GLfloat gfAstVertexBufferData [3*uiNumAstVertices];
-   NormalSmooth (g_octahedron_vertex_buffer_data, 3*3*8, gfAstVertexBufferData,
-                  3*uiNumAstVertices, 3);
+   NormalSmooth(g_octahedron_vertex_buffer_data, 3*3*8, gfAstVertexBufferData,
+                3*uiNumAstVertices,
+                log(uiNumAstVertices/uiNumOctahedronVertices)/log(4));
    // One color for each vertex. They were generated randomly.
    float r, g, b;
-   GLfloat earthColBufData [3*uiNumSphericalVertices];
-   for (int v = 0; v < uiNumSphericalVertices; ++v){
+   GLfloat earthColBufData[3*uiNumEarthVertices];
+   for (int v = 0; v < uiNumEarthVertices; ++v) {
       //193
       if ((v>767 && v<1536) || (v>3071 && v<3840) ||
          (v>13055 && v<13824) || (v>15359 && v<16128)
@@ -269,7 +281,7 @@ int main( void ) {
       earthColBufData[3*v+0] = r;
       g += 0.001f;
       g = g >= 1.0f ? (g - 1.0f) : g;
-      earthColBufData [3*v+1] = g;
+      earthColBufData[3*v+1] = g;
       b += 0.001f;
       b = b >= 1.0f ? (b - 1.0f) : b;
       earthColBufData [3*v+2] = b;
@@ -385,12 +397,12 @@ int main( void ) {
    GLuint vertexbuffer;
    glGenBuffers(1, &vertexbuffer);
    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-   glBufferData (GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data),
+   glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data),
       g_vertex_buffer_data, GL_STATIC_DRAW);
    GLuint CubeVertexBuffer;
    glGenBuffers(1, &CubeVertexBuffer);
    glBindBuffer(GL_ARRAY_BUFFER, CubeVertexBuffer);
-   glBufferData (GL_ARRAY_BUFFER, sizeof(g_cube_vertex_buffer_data),
+   glBufferData(GL_ARRAY_BUFFER, sizeof(g_cube_vertex_buffer_data),
       g_cube_vertex_buffer_data, GL_STATIC_DRAW);
    
    GLuint octahedronVertexBuffer;
@@ -402,8 +414,8 @@ int main( void ) {
    GLuint sphereVertexBuffer;
    glGenBuffers(1, &sphereVertexBuffer);
    glBindBuffer(GL_ARRAY_BUFFER, sphereVertexBuffer);
-   glBufferData(GL_ARRAY_BUFFER, sizeof(gfSphereVertexBufferData),
-      gfSphereVertexBufferData, GL_STATIC_DRAW);
+   glBufferData(GL_ARRAY_BUFFER, sizeof(gfEarthVertexBufferData),
+      gfEarthVertexBufferData, GL_STATIC_DRAW);
    
    GLuint astVertexBuffer;
    glGenBuffers(1, &astVertexBuffer);
@@ -436,15 +448,15 @@ int main( void ) {
       GL_STATIC_DRAW);
    
    GLuint astColorBuffer;
-   glGenBuffers (1, &astColorBuffer);
-   glBindBuffer (GL_ARRAY_BUFFER, astColorBuffer);
-   glBufferData (GL_ARRAY_BUFFER, sizeof(astColBufData), astColBufData,
+   glGenBuffers(1, &astColorBuffer);
+   glBindBuffer(GL_ARRAY_BUFFER, astColorBuffer);
+   glBufferData(GL_ARRAY_BUFFER, sizeof(astColBufData), astColBufData,
       GL_STATIC_DRAW);
    
    GLuint RedColorBuffer;
    glGenBuffers(1, &RedColorBuffer);
    glBindBuffer(GL_ARRAY_BUFFER, RedColorBuffer);
-   glBufferData (GL_ARRAY_BUFFER, sizeof(g_red_color_buffer_data),
+   glBufferData(GL_ARRAY_BUFFER, sizeof(g_red_color_buffer_data),
       g_red_color_buffer_data, GL_STATIC_DRAW);
    
    GLuint uvbuffer;
@@ -463,69 +475,78 @@ int main( void ) {
           "D:%f\n"
           "R:%f\n",G,D,R);
    //Bounding walls the distance of 4 times the radius of earth
-   World::Object* eastWall = pWorld->NewObject (
-      vec3 (200, 2*initialCamZPos, 2*initialCamZPos),
-      vec3 (initialCamZPos, 0, 0), vec3 (0.0f), 0, 0, 0, World::CUBOID);
-   World::Object* westWall = pWorld->NewObject (
-      vec3 (200, 2 * initialCamZPos, 2 * initialCamZPos),
-      vec3 (-initialCamZPos, 0, 0), vec3 (0.0f), 0, 0, 0, World::CUBOID);
-   World::Object* NorthWall = pWorld->NewObject (
-      vec3 (2*initialCamZPos, 200, 2 * initialCamZPos),
-      vec3 (0, initialCamZPos, 0), vec3 (0.0f), 0, 0, 0, World::CUBOID);
-   World::Object* SouthWall = pWorld->NewObject (
-      vec3 (2*initialCamZPos, 200, 2*initialCamZPos),
-      vec3 (0, -initialCamZPos, 0), vec3 (0.0f), 0, 0, 0, World::CUBOID);
-   World::Object* frontWall = pWorld->NewObject (
-      vec3 (2*initialCamZPos, 2*initialCamZPos, 200),
-      vec3 (0, 0, initialCamZPos), vec3(), 0, 0, 0, World::CUBOID);
-   World::Object* backWall = pWorld->NewObject (
-      vec3 (2*initialCamZPos, 2*initialCamZPos, 200),
-      vec3 (0, 0, -initialCamZPos), vec3(), 0, 0, 0, World::CUBOID);
+   World::Object* eastWall = pWorld->NewObject(
+      vec3(200, 2*(initialCamZPos+100), 2*(initialCamZPos+100)),
+      vec3((initialCamZPos+100), 0, 0), vec3(0.0f), 0, 0, 0, World::CUBOID);
+   World::Object* westWall = pWorld->NewObject(
+      vec3(200, 2*(initialCamZPos+100), 2*(initialCamZPos+100)),
+      vec3(-(initialCamZPos+100), 0, 0), vec3(0.0f), 0, 0, 0, World::CUBOID);
+   World::Object* NorthWall = pWorld->NewObject(
+      vec3(2*(initialCamZPos+100), 200, 2*(initialCamZPos+100)),
+      vec3(0, (initialCamZPos+100), 0), vec3(0.0f), 0, 0, 0, World::CUBOID);
+   World::Object* SouthWall = pWorld->NewObject(
+      vec3(2*(initialCamZPos+100), 200, 2*(initialCamZPos+100)),
+      vec3(0, -(initialCamZPos+100), 0), vec3(0.0f), 0, 0, 0, World::CUBOID);
+   World::Object* frontWall = pWorld->NewObject(
+      vec3(2*(initialCamZPos+100), 2*(initialCamZPos+100), 200),
+      vec3(0, 0, (initialCamZPos+100)), vec3(), 0, 0, 0, World::CUBOID);
+   World::Object* backWall = pWorld->NewObject(
+      vec3(2*(initialCamZPos+100), 2*(initialCamZPos+100), 200),
+      vec3(0, 0, -(initialCamZPos+100)), vec3(), 0, 0, 0, World::CUBOID);
    
-   World::Object* pEarth = pWorld->NewObject (vec3 (2*R, 2*R, 2*R), vec3 (0,0,0),
-      vec3 (0.0f, 0.0f, 0.0f), sphereVertexBuffer, earthColorBuffer,
-      uiNumSphericalVertices, World::Shape::SPHERE, 40000 * D, 0.8, vec3 (0.0),
-      vec3(0.0f, 1.0f, 0.0f));
+   World::Object* pEarth = pWorld->NewObject(
+      vec3(2*R, 2*R, 2*R), vec3(0,0,0), vec3(0.0f, 0.0f, 0.0f),
+      sphereVertexBuffer, earthColorBuffer, uiNumEarthVertices,
+      World::Shape::SPHERE, 40000 * D, 0.8, vec3(0.0),
+      vec3(0.0f, 0.0f, 0.0f));
    
-   World::Object* pMoon=
-      pWorld->NewObject(vec3(1000,1000,1000), vec3(R+4000+1,0,0), vec3(0.0f),
-      astVertexBuffer, astColorBuffer, uiNumAstVertices, World::SPHERE,
-      1000*WD, 1, vec3(0,2000,0));
+   World::Object* pMoon= pWorld->NewObject(
+      vec3(1000,1000,1000), vec3(R+4000+1,0,0), vec3(0.0f), astVertexBuffer,
+      astColorBuffer, uiNumAstVertices, World::SPHERE, 1000*WD, 1,
+      vec3(0,2000,0));
    
-   World::Object* pEye = pWorld->NewObject (vec3 (1000, 1000, 1000), vec3(),
-      vec3(), CubeVertexBuffer, cubeColorVertexBuffer, uiNumAstVertices,
-      World::CUBOID);
-   World::stick_objects (pEye, pEarth, vec3(0,0,R+100), vec3());
+   World::Object* pEye = pWorld->NewObject(
+      vec3(1000, 1000, 1000), vec3(), vec3(), CubeVertexBuffer,
+      cubeColorVertexBuffer, uiNumAstVertices, World::CUBOID);
+   World::stick_objects(pEye, pEarth, vec3(0,0,R+100), vec3());
    /*
-   World::Object* pEye = pWorld->NewObject (vec3 (1000, 1000, 1000),
-      vec3 (-2000, 0, 0), vec3 (), CubeVertexBuffer, cubeColorVertexBuffer,
-      uiNumAstVertices, World::CUBOID, 40000000*D, 0.8, vec3 (0.0, 0.0, 0.0),
-      vec3 (0.0f, 0.0f, 0.0f));
+   World::Object* pEye = pWorld->NewObject(vec3(1000, 1000, 1000),
+      vec3(-2000, 0, 0), vec3(), CubeVertexBuffer, cubeColorVertexBuffer,
+      uiNumAstVertices, World::CUBOID, 40000000*D, 0.8, vec3(0.0, 0.0, 0.0),
+      vec3(0.0f, 0.0f, 0.0f));
    
-   World::Object* pEye2 = pWorld->NewObject (vec3 (1000, 1000, 1000),
-      vec3 (2000, 0, 0), vec3 (), CubeVertexBuffer, cubeColorVertexBuffer,
+   World::Object* pEye2 = pWorld->NewObject(vec3(1000, 1000, 1000),
+      vec3(2000, 0, 0), vec3(), CubeVertexBuffer, cubeColorVertexBuffer,
       uiNumAstVertices, World::CUBOID, 40000000*D, 0.8, vec3(-0.0, 0.0, 0.0),
       vec3(0.0f, 0.0f, 0.0f));
    */
    bool shot = false;
    int hitCount = 0;
-   vec3 sizeOfBullet = vec3 (100, 100, 100);
+   vec3 sizeOfBullet = vec3(100, 100, 100);
    float speedOfBullet = 50.0f;
+   int iii=100;
+   int sign=1;
+   float magnitude=0.0;
+   bool startExplode=false;
    do {
       lastTime = currentTime;
       currentTime = glfwGetTime();
       deltaTime = currentTime - lastTime;
+      if (iii) {
+         glfwSetCursorPos(window, ::width/2, height/2);
+         --iii;
+      }
       computeMatricesFromInputs();
 
       // Measure speed
-      if (glfwGetKey (window, GLFW_KEY_SPACE) == GLFW_PRESS &&
-         speedOfBullet * (currentTime - lastShootTime) > length (sizeOfBullet)
+      if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS &&
+         speedOfBullet * (currentTime - lastShootTime) > length(sizeOfBullet)
       ) {
          World::Object* pProjectile =
-         pWorld->NewObject (sizeOfBullet, camPosition, vec3 (0.0f),
+         pWorld->NewObject(sizeOfBullet, camPosition, vec3(0.0f),
             CubeVertexBuffer, cubeColorVertexBuffer, uiNumAstVertices,
             World::CUBOID, 10 * D, 1, direction * speedOfBullet);
-         lastShootTime = glfwGetTime ();
+         lastShootTime = glfwGetTime();
       }
       
       ++nbFrames;
@@ -533,53 +554,64 @@ int main( void ) {
       char countText[256];
       // If last prinf() was more than 1sec ago
       if (currentTime - lastPrintTime >= 1.0) {
-         sprintf (text, "%d fps", nbFrames);
+         sprintf(text, "%d fps", nbFrames);
          nbFrames = 0;
          lastPrintTime = currentTime;
       }
-      glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-      glUseProgram (programID);
-      
-      
-      pWorld->Draw (programID, MatrixID);
+
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      glUseProgram(programID);
+      glUniform1f(magnitudeID, magnitude);
+      if (startExplode) {
+         magnitude+=sign*80;
+         if (magnitude>1000)sign=-1;
+         if (magnitude<0) {
+            sign=1;
+            magnitude=0;
+            startExplode=false;
+         }
+      }
+      pWorld->Draw(programID, MID, VPID);
       if (pEye->GetCollider() != NULL) {
          ++hitCount;
+         startExplode=true;
+         magnitude=0;
       }
-      sprintf (countText, "hitCount: %d", hitCount);
+      sprintf(countText, "hitCount: %d", hitCount);
       glDisableVertexAttribArray(0);
       glDisableVertexAttribArray(1);
       
       printText2D(text, 10, 40, 20);
-      printText2D (countText, 10, 10, 20);
+      printText2D(countText, 10, 10, 20);
       
-      glfwSwapBuffers (window);
-      glfwPollEvents ();
+      glfwSwapBuffers(window);
+      glfwPollEvents();
    } while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
-            glfwWindowShouldClose(window) == 0 );
+            glfwWindowShouldClose(window) == 0);
    
-   glDeleteBuffers (1, &sphereVertexBuffer);
-   glDeleteBuffers (1, &earthColorBuffer);
-   glDeleteBuffers (1, &triangleVertexBuffer);
-   glDeleteBuffers (1, &triColorVertexBuffer);
-   glDeleteBuffers (1, &vertexbuffer);
-   glDeleteBuffers (1, &CubeVertexBuffer);
-   glDeleteBuffers (1, &octahedronVertexBuffer);
-   glDeleteBuffers (1, &sphereVertexBuffer);
-   glDeleteBuffers (1, &astVertexBuffer);
-   glDeleteBuffers (1, &triangleVertexBuffer);
-   glDeleteBuffers (1, &triColorVertexBuffer);
-   glDeleteBuffers (1, &cubeColorVertexBuffer);
-   glDeleteBuffers (1, &astColorBuffer);
-   glDeleteBuffers (1, &RedColorBuffer);
-   glDeleteBuffers (1, &uvbuffer);
+   glDeleteBuffers(1, &sphereVertexBuffer);
+   glDeleteBuffers(1, &earthColorBuffer);
+   glDeleteBuffers(1, &triangleVertexBuffer);
+   glDeleteBuffers(1, &triColorVertexBuffer);
+   glDeleteBuffers(1, &vertexbuffer);
+   glDeleteBuffers(1, &CubeVertexBuffer);
+   glDeleteBuffers(1, &octahedronVertexBuffer);
+   glDeleteBuffers(1, &sphereVertexBuffer);
+   glDeleteBuffers(1, &astVertexBuffer);
+   glDeleteBuffers(1, &triangleVertexBuffer);
+   glDeleteBuffers(1, &triColorVertexBuffer);
+   glDeleteBuffers(1, &cubeColorVertexBuffer);
+   glDeleteBuffers(1, &astColorBuffer);
+   glDeleteBuffers(1, &RedColorBuffer);
+   glDeleteBuffers(1, &uvbuffer);
    
-   glDeleteProgram (programID);
-   glDeleteVertexArrays (1, &VertexArrayID);
+   glDeleteProgram(programID);
+   glDeleteVertexArrays(1, &VertexArrayID);
    
    // Delete the text's VBO, the shader and the texture
-   cleanupText2D ();
+   cleanupText2D();
    
-   glfwTerminate ();
+   glfwTerminate();
    
    return 0;
 }

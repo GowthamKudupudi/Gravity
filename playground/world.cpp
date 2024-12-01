@@ -80,9 +80,9 @@ mat4 rotate (mat4 r,vec3 v) {
 //}
 
 void World::Draw (
-   GLuint programID, GLuint matrixID
+   GLuint programID, GLuint mID, GLuint vpID
 ) {
-   printf ("TimePassed: %f\n", deltaTime);
+   //printf ("TimePassed: %f\n", deltaTime);
    int i = 0; int j = 0;
    vector <Object> vTempObjs;
    // Copy of objects having stuck objects
@@ -253,12 +253,12 @@ void World::Draw (
       vec3 v3AngularDisplacement = pObj ->m_v3AVelocity * deltaTime;
       pObj->m_v3Direction+=v3AngularDisplacement;
       if (i>5) {
-      printf ("%d: m:%f whd:(%f,%f,%f) ", i, pObj->mass_fm, pObj->m_v3Size.x,
-         pObj->m_v3Size.y, pObj->m_v3Size.z);
-      printf ("at xyz:(%a,%a,%a) ", pObj->m_v3Position.x, pObj->m_v3Position.y,
-         pObj->m_v3Position.z);
-      printf ("with vxyz:(%a,%a,%a)\n", pObj->m_v3Velocity.x,
-         pObj->m_v3Velocity.y, pObj->m_v3Velocity.z);
+         //printf ("%d: m:%f whd:(%f,%f,%f) ", i, pObj->mass_fm, pObj->m_v3Size.x,
+         //pObj->m_v3Size.y, pObj->m_v3Size.z);
+      //printf ("at xyz:(%a,%a,%a) ", pObj->m_v3Position.x, pObj->m_v3Position.y,
+         //pObj->m_v3Position.z);
+   //printf ("with vxyz:(%a,%a,%a)\n", pObj->m_v3Velocity.x,
+         //pObj->m_v3Velocity.y, pObj->m_v3Velocity.z);
       }
       // Draw later if the object is stuck to another object.
       ++iStuckObjIndex;
@@ -275,9 +275,11 @@ void World::Draw (
       trans = translate (mat4(1.0f), pObj->m_v3Position);
       mat4 model (1.0f);
       model = trans * scale * rot;
+      mat4 identity(1.0f);
       if (pObj->m_VertexBuffer) {
-         mat4 MVP = ProjectionMatrix * ViewMatrix * model;
-         glUniformMatrix4fv (matrixID, 1, GL_FALSE, &MVP [0][0]);
+         mat4 VP = ProjectionMatrix * ViewMatrix * identity;
+         glUniformMatrix4fv (mID, 1, GL_FALSE, &model[0][0]);
+         glUniformMatrix4fv (vpID, 1, GL_FALSE, &VP[0][0]);
          glEnableVertexAttribArray (0);
          glBindBuffer (GL_ARRAY_BUFFER, pObj->m_VertexBuffer);
          glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
@@ -322,9 +324,11 @@ void World::Draw (
          trans = translate (mat4 (1.0), rJObj .m_v3Position);
          mat4 model (1.0f);
          model = trans * scale * rot;
+         mat4 identity(1.0f);
          if (rJObj .m_VertexBuffer) {
-            mat4 MVP = ProjectionMatrix * ViewMatrix * model;
-            glUniformMatrix4fv (matrixID, 1, GL_FALSE, &MVP [0][0]);
+            mat4 VP = ProjectionMatrix * ViewMatrix * identity;
+            glUniformMatrix4fv (mID, 1, GL_FALSE, &model[0][0]);
+            glUniformMatrix4fv (vpID, 1, GL_FALSE, &VP[0][0]);
             glEnableVertexAttribArray (0);
             glBindBuffer (GL_ARRAY_BUFFER, rJObj .m_VertexBuffer);
             glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
