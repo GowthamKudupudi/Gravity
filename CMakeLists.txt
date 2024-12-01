@@ -57,22 +57,22 @@ add_definitions(
 # User playground
 add_executable(playground 
 	playground/playground.cpp
-    playground/world.cpp
-    playground/world.hpp
-    playground/fragmentplayer.fragmentshader
-    playground/vertexplayer.vertexshader
-    playground/TextVertexShader.fragmentshader
-    playground/TextVertexShader.vertexshader
-    playground/Holstein.DDS
-    common/shader.cpp
+   playground/world.cpp
+   playground/world.hpp
+   playground/playgroundfragment.glsl
+   playground/playgroundvertex.glsl
+   playground/playgroundgeometry.glsl
+   playground/TextFragment.glsl
+   playground/TextVertex.glsl
+   playground/Holstein.DDS
+   common/shader.cpp
 	common/shader.hpp
-    common/texture.cpp
-    common/texture.hpp
-    common/controls.cpp
-    common/controls.hpp
-    common/text2D.cpp
-    common/text2D.hpp
-
+   common/texture.cpp
+   common/texture.hpp
+   common/controls.cpp
+   common/controls.hpp
+   common/text2D.cpp
+   common/text2D.hpp
 )
 target_link_libraries(playground
 	${ALL_LIBS}
