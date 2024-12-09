@@ -394,22 +394,22 @@ int main (void) {
       1.000004f, 1.0f-0.671847f,
       0.667979f, 1.0f-0.335851f
    };
-   GLuint vertexbuffer;
-   glGenBuffers(1, &vertexbuffer);
-   glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-   glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data),
-      g_vertex_buffer_data, GL_STATIC_DRAW);
+   // GLuint vertexbuffer;
+   // glGenBuffers(1, &vertexbuffer);
+   // glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+   // glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data),
+   //    g_vertex_buffer_data, GL_STATIC_DRAW);
    GLuint CubeVertexBuffer;
    glGenBuffers(1, &CubeVertexBuffer);
    glBindBuffer(GL_ARRAY_BUFFER, CubeVertexBuffer);
    glBufferData(GL_ARRAY_BUFFER, sizeof(g_cube_vertex_buffer_data),
       g_cube_vertex_buffer_data, GL_STATIC_DRAW);
    
-   GLuint octahedronVertexBuffer;
-   glGenBuffers(1, &octahedronVertexBuffer);
-   glBindBuffer(GL_ARRAY_BUFFER, octahedronVertexBuffer);
-   glBufferData(GL_ARRAY_BUFFER, sizeof(g_octahedron_vertex_buffer_data),
-      g_octahedron_vertex_buffer_data, GL_STATIC_DRAW);
+   // GLuint octahedronVertexBuffer;
+   // glGenBuffers(1, &octahedronVertexBuffer);
+   // glBindBuffer(GL_ARRAY_BUFFER, octahedronVertexBuffer);
+   // glBufferData(GL_ARRAY_BUFFER, sizeof(g_octahedron_vertex_buffer_data),
+   //    g_octahedron_vertex_buffer_data, GL_STATIC_DRAW);
    
    GLuint sphereVertexBuffer;
    glGenBuffers(1, &sphereVertexBuffer);
@@ -423,21 +423,21 @@ int main (void) {
    glBufferData(GL_ARRAY_BUFFER, sizeof(gfAstVertexBufferData),
       gfAstVertexBufferData, GL_STATIC_DRAW);
    
-   GLuint triangleVertexBuffer;
-   glGenBuffers(1, &triangleVertexBuffer);
-   glBindBuffer(GL_ARRAY_BUFFER, triangleVertexBuffer);
-   glBufferData(GL_ARRAY_BUFFER, sizeof(gfTriangleBufferData),
-      gfTriangleBufferData, GL_STATIC_DRAW);
+   // GLuint triangleVertexBuffer;
+   // glGenBuffers(1, &triangleVertexBuffer);
+   // glBindBuffer(GL_ARRAY_BUFFER, triangleVertexBuffer);
+   // glBufferData(GL_ARRAY_BUFFER, sizeof(gfTriangleBufferData),
+   //    gfTriangleBufferData, GL_STATIC_DRAW);
    
-   GLuint triColorVertexBuffer;
-   glGenBuffers(1, &triColorVertexBuffer);
-   glBindBuffer(GL_ARRAY_BUFFER, triColorVertexBuffer);
-   glBufferData(GL_ARRAY_BUFFER, sizeof(gfTriColorBufferData),
-      gfTriColorBufferData, GL_STATIC_DRAW);
+   // GLuint triColorVertexBuffer;
+   // glGenBuffers(1, &triColorVertexBuffer);
+   // glBindBuffer(GL_ARRAY_BUFFER, triColorVertexBuffer);
+   // glBufferData(GL_ARRAY_BUFFER, sizeof(gfTriColorBufferData),
+   //    gfTriColorBufferData, GL_STATIC_DRAW);
    
-   GLuint cubeColorVertexBuffer;
-   glGenBuffers(1, &cubeColorVertexBuffer);
-   glBindBuffer(GL_ARRAY_BUFFER, cubeColorVertexBuffer);
+   GLuint cubeColorBuffer;
+   glGenBuffers(1, &cubeColorBuffer);
+   glBindBuffer(GL_ARRAY_BUFFER, cubeColorBuffer);
    glBufferData(GL_ARRAY_BUFFER, sizeof(gfCubeColorBufferData),
       gfCubeColorBufferData, GL_STATIC_DRAW);
    
@@ -453,17 +453,35 @@ int main (void) {
    glBufferData(GL_ARRAY_BUFFER, sizeof(astColBufData), astColBufData,
       GL_STATIC_DRAW);
    
-   GLuint RedColorBuffer;
-   glGenBuffers(1, &RedColorBuffer);
-   glBindBuffer(GL_ARRAY_BUFFER, RedColorBuffer);
-   glBufferData(GL_ARRAY_BUFFER, sizeof(g_red_color_buffer_data),
-      g_red_color_buffer_data, GL_STATIC_DRAW);
+   // GLuint RedColorBuffer;
+   // glGenBuffers(1, &RedColorBuffer);
+   // glBindBuffer(GL_ARRAY_BUFFER, RedColorBuffer);
+   // glBufferData(GL_ARRAY_BUFFER, sizeof(g_red_color_buffer_data),
+   //    g_red_color_buffer_data, GL_STATIC_DRAW);
    
-   GLuint uvbuffer;
-   glGenBuffers(1, &uvbuffer);
-   glBindBuffer(GL_ARRAY_BUFFER,uvbuffer);
-   glBufferData(GL_ARRAY_BUFFER, sizeof(g_uv_buffer_data), g_uv_buffer_data,
-      GL_STATIC_DRAW);
+   // GLuint uvbuffer;
+   // glGenBuffers(1, &uvbuffer);
+   // glBindBuffer(GL_ARRAY_BUFFER,uvbuffer);
+   // glBufferData(GL_ARRAY_BUFFER, sizeof(g_uv_buffer_data), g_uv_buffer_data,
+   //    GL_STATIC_DRAW);
+
+   GLuint FramebufferName = 0;
+   glGenFramebuffers(1, &FramebufferName);
+   glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+   // The texture we're going to render to
+   GLuint renderedTexture;
+   glGenTextures(1, &renderedTexture);
+
+// "Bind" the newly created texture : all future texture functions will modify this texture
+   glBindTexture(GL_TEXTURE_2D, renderedTexture);
+
+// Give an empty image to OpenGL ( the last "0" )
+   glTexImage2D(GL_TEXTURE_2D, 0,GL_RGB, 1024, 768, 0,GL_RGB, GL_UNSIGNED_BYTE, 0);
+
+// Poor filtering. Needed !
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
    GLsizei verticesToDraw=0;
    
    // Initialize our little text library with the Holstein font
@@ -507,16 +525,16 @@ int main (void) {
    
    World::Object* pEye = pWorld->NewObject(
       vec3(1000, 1000, 1000), vec3(), vec3(), CubeVertexBuffer,
-      cubeColorVertexBuffer, uiNumAstVertices, World::CUBOID);
+      cubeColorBuffer, uiNumAstVertices, World::CUBOID);
    World::stick_objects(pEye, pEarth, vec3(0,0,R+100), vec3());
    /*
    World::Object* pEye = pWorld->NewObject(vec3(1000, 1000, 1000),
-      vec3(-2000, 0, 0), vec3(), CubeVertexBuffer, cubeColorVertexBuffer,
+      vec3(-2000, 0, 0), vec3(), CubeVertexBuffer, cubeColorBuffer,
       uiNumAstVertices, World::CUBOID, 40000000*D, 0.8, vec3(0.0, 0.0, 0.0),
       vec3(0.0f, 0.0f, 0.0f));
    
    World::Object* pEye2 = pWorld->NewObject(vec3(1000, 1000, 1000),
-      vec3(2000, 0, 0), vec3(), CubeVertexBuffer, cubeColorVertexBuffer,
+      vec3(2000, 0, 0), vec3(), CubeVertexBuffer, cubeColorBuffer,
       uiNumAstVertices, World::CUBOID, 40000000*D, 0.8, vec3(-0.0, 0.0, 0.0),
       vec3(0.0f, 0.0f, 0.0f));
    */
@@ -544,7 +562,7 @@ int main (void) {
       ) {
          World::Object* pProjectile =
          pWorld->NewObject(sizeOfBullet, camPosition, vec3(0.0f),
-            CubeVertexBuffer, cubeColorVertexBuffer, uiNumAstVertices,
+            CubeVertexBuffer, cubeColorBuffer, uiNumAstVertices,
             World::CUBOID, 10 * D, 1, direction * speedOfBullet);
          lastShootTime = glfwGetTime();
       }
@@ -589,21 +607,20 @@ int main (void) {
    } while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
             glfwWindowShouldClose(window) == 0);
    
-   glDeleteBuffers(1, &sphereVertexBuffer);
+   glDeleteBuffers(1, &astColorBuffer);
+   // glDeleteBuffers(1, &RedColorBuffer);
    glDeleteBuffers(1, &earthColorBuffer);
-   glDeleteBuffers(1, &triangleVertexBuffer);
-   glDeleteBuffers(1, &triColorVertexBuffer);
-   glDeleteBuffers(1, &vertexbuffer);
+   // glDeleteBuffers(1, &triangleVertexBuffer);
+   // glDeleteBuffers(1, &triColorVertexBuffer);
+   // glDeleteBuffers(1, &vertexbuffer);
    glDeleteBuffers(1, &CubeVertexBuffer);
-   glDeleteBuffers(1, &octahedronVertexBuffer);
+   // glDeleteBuffers(1, &octahedronVertexBuffer);
    glDeleteBuffers(1, &sphereVertexBuffer);
    glDeleteBuffers(1, &astVertexBuffer);
-   glDeleteBuffers(1, &triangleVertexBuffer);
-   glDeleteBuffers(1, &triColorVertexBuffer);
-   glDeleteBuffers(1, &cubeColorVertexBuffer);
-   glDeleteBuffers(1, &astColorBuffer);
-   glDeleteBuffers(1, &RedColorBuffer);
-   glDeleteBuffers(1, &uvbuffer);
+   // glDeleteBuffers(1, &triangleVertexBuffer);
+   // glDeleteBuffers(1, &triColorVertexBuffer);
+   glDeleteBuffers(1, &cubeColorBuffer);
+   // glDeleteBuffers(1, &uvbuffer);
    
    glDeleteProgram(programID);
    glDeleteVertexArrays(1, &VertexArrayID);
