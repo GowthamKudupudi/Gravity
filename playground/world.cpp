@@ -79,6 +79,13 @@ mat4 rotate (mat4 r,vec3 v) {
 //    return collisionX && collisionY && collisionZ;
 //}
 
+glm::mat4 biasMatrix(
+   0.5, 0.0, 0.0, 0.0, 
+   0.0, 0.5, 0.0, 0.0,
+   0.0, 0.0, 0.5, 0.0,
+   0.5, 0.5, 0.5, 1.0
+);
+
 void World::Draw (
    GLuint programID, GLuint mID, GLuint vpID
 ) {
@@ -98,7 +105,7 @@ void World::Draw (
          Object& rJObj = *pObj->m_vpStuckObjs[j];
          rJObj.m_v3Position -= pObj->m_v3Position;
       }*/
-      Object tempObj (*pObj);
+      Object tempObj(*pObj);
       // bounding wall density is also zero
       if (!pObj->m_fDensity) goto afterGravityImpact;
       if (pObj->massive_pm != pObj) goto afterGravityImpact;
@@ -277,16 +284,38 @@ void World::Draw (
       model = trans * scale * rot;
       mat4 identity(1.0f);
       if (pObj->m_VertexBuffer) {
+         mat4 depthMVP = ShdwPrjMatrix * ShdwViewMatrix * model;
+         glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+         glViewport(0,0,width,height);
+         glUseProgram(shdwProgID);
+         glUniformMatrix4fv(depthMVPID, 1, GL_FALSE, &depthMVP[0][0]);
+         glEnableVertexAttribArray(0);
+         glBindBuffer(GL_ARRAY_BUFFER, pObj->m_VertexBuffer);
+         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+         glDrawArrays(GL_TRIANGLES, 0, pObj->m_TotalVertices);
+         glDisableVertexAttribArray(0);
+      
          mat4 VP = ProjectionMatrix * ViewMatrix * identity;
-         glUniformMatrix4fv (mID, 1, GL_FALSE, &model[0][0]);
-         glUniformMatrix4fv (vpID, 1, GL_FALSE, &VP[0][0]);
-         glEnableVertexAttribArray (0);
-         glBindBuffer (GL_ARRAY_BUFFER, pObj->m_VertexBuffer);
-         glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+         depthMVP = biasMatrix * depthMVP;
+         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+         glViewport(0,0,width,height);
+         glUseProgram(programID);
+         glUniformMatrix4fv(depthMVPID2, 1, GL_FALSE, &depthMVP[0][0]);
+         glUniform1f(magnitudeID, magnitude);
+         glUniformMatrix4fv(mID, 1, GL_FALSE, &model[0][0]);
+         glUniformMatrix4fv(vpID, 1, GL_FALSE, &VP[0][0]);
+         glActiveTexture(GL_TEXTURE0);
+         glBindTexture(GL_TEXTURE_2D, depthTexture);
+         glUniform1i(shadowMapID, 0);
+         glEnableVertexAttribArray(0);
+         glBindBuffer(GL_ARRAY_BUFFER, pObj->m_VertexBuffer);
+         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
          glEnableVertexAttribArray (1);
-         glBindBuffer (GL_ARRAY_BUFFER, pObj->m_ColorBuffer);
-         glVertexAttribPointer (1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-         glDrawArrays (GL_TRIANGLES, 0, pObj->m_TotalVertices);
+         glBindBuffer(GL_ARRAY_BUFFER, pObj->m_ColorBuffer);
+         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+         glDrawArrays(GL_TRIANGLES, 0, pObj->m_TotalVertices);
+         glDisableVertexAttribArray(0);
+         glDisableVertexAttribArray(1);
       }
       for (
          j = 0; j < pObj->m_vpStuckObjs .size () && pObj->massive_pm == pObj; ++j
@@ -326,16 +355,38 @@ void World::Draw (
          model = trans * scale * rot;
          mat4 identity(1.0f);
          if (rJObj .m_VertexBuffer) {
+            mat4 depthMVP = ShdwPrjMatrix * ShdwViewMatrix * model;
+            glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+            glViewport(0,0,width,height);
+            glUseProgram(shdwProgID);
+            glUniformMatrix4fv(depthMVPID, 1, GL_FALSE, &depthMVP[0][0]);
+            glEnableVertexAttribArray(0);
+            glBindBuffer(GL_ARRAY_BUFFER, pObj->m_VertexBuffer);
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+            glDrawArrays(GL_TRIANGLES, 0, pObj->m_TotalVertices);
+            glDisableVertexAttribArray(0);
+
             mat4 VP = ProjectionMatrix * ViewMatrix * identity;
+            depthMVP = biasMatrix * depthMVP;
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glViewport(0,0,width,height);
+            glUseProgram(programID);
+            glUniformMatrix4fv(depthMVPID2, 1, GL_FALSE, &depthMVP[0][0]);
+            glUniform1f(magnitudeID, magnitude);
             glUniformMatrix4fv (mID, 1, GL_FALSE, &model[0][0]);
             glUniformMatrix4fv (vpID, 1, GL_FALSE, &VP[0][0]);
-            glEnableVertexAttribArray (0);
-            glBindBuffer (GL_ARRAY_BUFFER, rJObj .m_VertexBuffer);
-            glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-            glEnableVertexAttribArray (1);
-            glBindBuffer (GL_ARRAY_BUFFER, rJObj .m_ColorBuffer);
-            glVertexAttribPointer (1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-            glDrawArrays (GL_TRIANGLES, 0, rJObj .m_TotalVertices);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, depthTexture);
+            glUniform1i(shadowMapID, 0);
+            glEnableVertexAttribArray(0);
+            glBindBuffer(GL_ARRAY_BUFFER, rJObj.m_VertexBuffer);
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+            glEnableVertexAttribArray(1);
+            glBindBuffer(GL_ARRAY_BUFFER, rJObj .m_ColorBuffer);
+            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+            glDrawArrays(GL_TRIANGLES, 0, rJObj.m_TotalVertices);
+            glDisableVertexAttribArray(0);
+            glDisableVertexAttribArray(1);
          }
       }
    }

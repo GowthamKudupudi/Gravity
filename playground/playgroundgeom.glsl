@@ -4,8 +4,9 @@ layout (triangles) in;
 layout (triangle_strip, max_vertices = 3) out;
 
 in vec3 fragColor[];
+in vec4 shadowPos[];
 out vec3 fColor;
-
+out vec4 shdwPos;
 uniform mat4 VP;
 uniform float magnitude;
 
@@ -31,16 +32,19 @@ void main() {
    float dfusComp = (0.5+dot(liDir,normal))/2;
 //   float dfusComp = dot(liDir,normal);
    fColor = fragColor[0]*dfusComp;
+   shdwPos = shadowPos[0];
 //   gl_Position = tri[0];
    gl_Position = VP*explode(tri[0], normal, magnitude);
    EmitVertex();
 
    fColor = fragColor[1]*dfusComp;
+   shdwPos = shadowPos[1];
 //   gl_Position = tri[1];
    gl_Position = VP*explode(tri[1], normal, magnitude);
    EmitVertex();
 
    fColor = fragColor[2]*dfusComp;
+   shdwPos = shadowPos[2];
 //   gl_Position = tri[2];
    gl_Position = VP*explode(tri[2], normal, magnitude);
    EmitVertex();

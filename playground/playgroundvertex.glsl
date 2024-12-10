@@ -14,10 +14,12 @@ uniform mat4 M;
 uniform mat4 VP;
 uniform float zHalfMax;
 uniform float magnitude;
+uniform mat4 depthMVP;
 
 out mat4 VPgeom;
 out float magGeom;
 out vec3 fragColor;
+out vec4 shadowPos;
 
 void main(){
    //Tut2
@@ -26,6 +28,7 @@ void main(){
    VPgeom = VP;
    magGeom = magnitude;
    fragColor = vertexColor;
+   shadowPos = depthMVP*vec4(vertexPosition_modelspace, 1);
    //Tut4
    //float color = 3*(vertexPosition_modelspace.z+zHalfMax)/(2*zHalfMax)-1;
    /* fragmentColor.x=color>1?0:color; */

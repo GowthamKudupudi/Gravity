@@ -26,13 +26,14 @@ float verticalAngle = 0.0f;
 // Initial Field of View
 float initialFoV = 45.0f; // Human eye 114
 float initialCamZPos = 20000.0f; // 20000.0 to look at earth
+float sunZPos = initialCamZPos*100;
 float speed = 2500.0f; // 1500 km / second
 float mouseSpeed = 0.005f;
 float minDisplayRange = 0.08f;     // 100m near clipping plane
 // far clipping plane
 float maxDisplayRange = sqrt(pow(initialCamZPos, 2) * 3); // 20,000km
 glm::vec3 camPosition = glm::vec3(0, 0, initialCamZPos);
-glm::vec3 sunPosition = glm::vec3(initialCamZPos,0,0);
+glm::vec3 sunPosition = glm::vec3(sunZPos,0,0);
 float G = 6.674 * pow(10,-20); // km3.kg-1.s-2
 float D = 5510 * pow(10,9); // kg.km-3
 float WD = 1000 * pow(10,9); // kg.km-3
@@ -44,6 +45,14 @@ float deltaTime = 0;
 double lastPrintTime = lastTime;
 double lastShootTime = lastTime;
 
+GLuint depthMVPID2;
+GLuint magnitudeID;
+GLuint shdwProgID;
+GLuint depthMVPID;
+GLuint shadowMapID;
+GLuint FramebufferName;
+float magnitude;
+GLuint depthTexture;
 
 #include "common/shader.hpp"
 //Tut5
@@ -109,6 +118,23 @@ void NormalSmooth (
    free(gfTempSolid);
 }
 
+void exitOnGlError() {
+   GLenum glstatus = glGetError();
+   switch(glstatus) {
+      case GL_NO_ERROR:
+         return;
+      case GL_INVALID_ENUM:
+      case GL_INVALID_VALUE:
+      case GL_INVALID_OPERATION:
+      case GL_INVALID_FRAMEBUFFER_OPERATION:
+      case  GL_OUT_OF_MEMORY:
+      case GL_STACK_UNDERFLOW:
+      case GL_STACK_OVERFLOW:
+         printf("glerror\n");
+         exit(-1);
+   }
+}
+
 int main (void) {
    if (!glfwInit()) {
       fprintf(stderr, "Failed to initialize GLFW\n");
@@ -165,9 +191,15 @@ int main (void) {
    GLuint programID = LoadShaders("playgroundvertex.glsl",
                                   "playgroundfragment.glsl",
                                   "playgroundgeom.glsl");
-   GLuint MID = glGetUniformLocation( programID, "M");
-   GLuint VPID = glGetUniformLocation( programID, "VP");
-   GLuint magnitudeID = glGetUniformLocation( programID, "magnitude");
+   GLuint MID = glGetUniformLocation(programID, "M");
+   GLuint VPID = glGetUniformLocation(programID, "VP");
+   magnitudeID = glGetUniformLocation(programID, "magnitude");
+
+   shdwProgID = LoadShaders("shadowVertex.glsl",
+                            "shadowFragment.glsl");
+   depthMVPID = glGetUniformLocation(shdwProgID, "depthMVP");
+   depthMVPID2 = glGetUniformLocation(programID, "depthMVP");
+   shadowMapID = glGetUniformLocation(programID, "shadowMap");
    
    static const GLfloat g_vertex_buffer_data [] = {
       -0.5f, -1.0f, -1.0f,
@@ -465,23 +497,70 @@ int main (void) {
    // glBufferData(GL_ARRAY_BUFFER, sizeof(g_uv_buffer_data), g_uv_buffer_data,
    //    GL_STATIC_DRAW);
 
-   GLuint FramebufferName = 0;
+   GLenum glstatus;
+   FramebufferName = 0;
    glGenFramebuffers(1, &FramebufferName);
+   exitOnGlError();
    glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+   exitOnGlError();
    // The texture we're going to render to
-   GLuint renderedTexture;
-   glGenTextures(1, &renderedTexture);
+   glGenTextures(1, &depthTexture);
+   exitOnGlError();
 
 // "Bind" the newly created texture : all future texture functions will modify this texture
-   glBindTexture(GL_TEXTURE_2D, renderedTexture);
+   glBindTexture(GL_TEXTURE_2D, depthTexture);
+   exitOnGlError();
 
 // Give an empty image to OpenGL ( the last "0" )
-   glTexImage2D(GL_TEXTURE_2D, 0,GL_RGB, 1024, 768, 0,GL_RGB, GL_UNSIGNED_BYTE, 0);
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, width, height, 0,
+                GL_DEPTH_COMPONENTS, GL_FLOAT, 0);
+   exitOnGlError();
 
 // Poor filtering. Needed !
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE,
+                   GL_COMPARE_R_TO_TEXTURE);
+   exitOnGlError();
+   
+   glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0);
+   exitOnGlError();
+   glDrawBuffer(GL_NONE);
+   glstatus =
+      glCheckNamedFramebufferStatus(FramebufferName,GL_FRAMEBUFFER);
+   switch (glstatus) {
+      case GL_FRAMEBUFFER_UNDEFINED:
+         printf("framebuffer is the default read or draw framebuffer, but the default framebuffer does not exist.\n");
+         return -1;
+      case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+         printf("any of the framebuffer attachment points are framebuffer incomplete\n");
+         return -1;
+      case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+         printf("framebuffer does not have at least one image attached to it\n");
+         return -1;
+      case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+         printf("value of GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE is GL_NONE for any color attachment point(s) named by GL_DRAW_BUFFERi\n");
+         return -1;
+      case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+         printf("GL_READ_BUFFER is not GL_NONE and the value of GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE is GL_NONE for the color attachment point named by GL_READ_BUFFER\n");
+         return -1;
+      case GL_FRAMEBUFFER_UNSUPPORTED:
+         printf("combination of internal formats of the attached images violates an implementation-dependent set of restrictions\n");
+         return -1;
+      case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+         printf("value of GL_RENDERBUFFER_SAMPLES is not the same for all attached renderbuffers; if the value of GL_TEXTURE_SAMPLES is the not same for all attached textures; or, if the attached images are a mix of renderbuffers and textures, the value of GL_RENDERBUFFER_SAMPLES does not match the value of GL_TEXTURE_SAMPLES\nor\nvalue of GL_TEXTURE_FIXED_SAMPLE_LOCATIONS is not the same for all attached textures; or, if the attached images are a mix of renderbuffers and textures, the value of GL_TEXTURE_FIXED_SAMPLE_LOCATIONS is not GL_TRUE for all attached textures\n");
+         return -1;
+      case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
+         printf("any framebuffer attachment is layered, and any populated attachment is not layered, or if all populated color attachments are not from textures of the same target");
+         return -1;
+      case GL_FRAMEBUFFER_COMPLETE:
+      default:
+         break;
+   }
+   
    GLsizei verticesToDraw=0;
    
    // Initialize our little text library with the Holstein font
@@ -578,8 +657,6 @@ int main (void) {
       }
 
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-      glUseProgram(programID);
-      glUniform1f(magnitudeID, magnitude);
       if (startExplode) {
          magnitude+=sign*80;
          if (magnitude>1000)sign=-1;
@@ -596,8 +673,6 @@ int main (void) {
          magnitude=0;
       }
       sprintf(countText, "hitCount: %d", hitCount);
-      glDisableVertexAttribArray(0);
-      glDisableVertexAttribArray(1);
       
       printText2D(text, 10, 40, 20);
       printText2D(countText, 10, 10, 20);
