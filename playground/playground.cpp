@@ -8,7 +8,7 @@
 #include <GL/glew.h>
 
 // Include GLFW
-#include <glfw3.h>
+#include <GLFW/glfw3.h>
 GLFWwindow* window;
 float width=800.0f;
 float height=600.0f;
@@ -26,7 +26,7 @@ float verticalAngle = 0.0f;
 // Initial Field of View
 float initialFoV = 45.0f; // Human eye 114
 float initialCamZPos = 20000.0f; // 20000.0 to look at earth
-float sunZPos = initialCamZPos*100;
+float sunZPos = initialCamZPos;
 float speed = 2500.0f; // 1500 km / second
 float mouseSpeed = 0.005f;
 float minDisplayRange = 0.08f;     // 100m near clipping plane
@@ -51,8 +51,14 @@ GLuint shdwProgID;
 GLuint depthMVPID;
 GLuint shadowMapID;
 GLuint FramebufferName;
+GLuint QuadVertexBuffer;
 float magnitude;
 GLuint depthTexture;
+GLuint quadProgID;
+GLuint texID;
+GLuint programID;
+GLuint MID;
+GLuint VPID;
 
 #include "common/shader.hpp"
 //Tut5
@@ -124,15 +130,28 @@ void exitOnGlError() {
       case GL_NO_ERROR:
          return;
       case GL_INVALID_ENUM:
+         printf("GL_INVALID_ENUM\n");
+         break;
       case GL_INVALID_VALUE:
+         printf("GL_INVALID_VALUE\n");
+         break;
       case GL_INVALID_OPERATION:
+         printf("GL_INVALID_OPERTATION\n");
+         break;
       case GL_INVALID_FRAMEBUFFER_OPERATION:
-      case  GL_OUT_OF_MEMORY:
+         printf("GL_INVALID_FRAMEBUFFER_OPERATION\n");
+         break;
+      case GL_OUT_OF_MEMORY:
+         printf("GL_OUT_OF_MEMORY\n");
+         break;
       case GL_STACK_UNDERFLOW:
+         printf("GL_STACK_UNDERFLOW\n");
+         break;
       case GL_STACK_OVERFLOW:
-         printf("glerror\n");
-         exit(-1);
+         printf("GL_STACK_OVERFLOW\n");
+         break;
    }
+   exit(-1);
 }
 
 int main (void) {
@@ -159,6 +178,11 @@ int main (void) {
       return -1;
    }
    glfwMakeContextCurrent(window);
+   int windowWidth = 1024;
+   int windowHeight = 768;
+   // But on MacOS X with a retina screen it'll be 1024*2 and 768*2, so we get the actual framebuffer size:
+   glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
+   printf("Window width: %d, height: %d\n", windowWidth, windowHeight);
    World* pWorld = World::create_world(window);
    glewExperimental = true;
    if (glewInit() != GLEW_OK) {
@@ -188,24 +212,24 @@ int main (void) {
    glGenVertexArrays(1, &VertexArrayID);
    glBindVertexArray(VertexArrayID);
    
-   GLuint programID = LoadShaders("playgroundvertex.glsl",
-                                  "playgroundfragment.glsl",
-                                  "playgroundgeom.glsl");
-   GLuint MID = glGetUniformLocation(programID, "M");
-   GLuint VPID = glGetUniformLocation(programID, "VP");
-   magnitudeID = glGetUniformLocation(programID, "magnitude");
-
    shdwProgID = LoadShaders("shadowVertex.glsl",
                             "shadowFragment.glsl");
    depthMVPID = glGetUniformLocation(shdwProgID, "depthMVP");
-   depthMVPID2 = glGetUniformLocation(programID, "depthMVP");
-   shadowMapID = glGetUniformLocation(programID, "shadowMap");
    
    static const GLfloat g_vertex_buffer_data [] = {
       -0.5f, -1.0f, -1.0f,
        0.5f, -1.0f, -1.0f,
-       0.0f,  1.0f, -1.0f,
+       0.0f,  1.0f, -1.0f
    };
+
+   static const GLfloat g_quad_vertex_buffer_data[] = {
+		-1.0f, -1.0f, 0.0f,
+		 1.0f, -1.0f, 0.0f,
+		-1.0f,  1.0f, 0.0f,
+		-1.0f,  1.0f, 0.0f,
+		 1.0f, -1.0f, 0.0f,
+		 1.0f,  1.0f, 0.0f
+	};
    
    static const GLfloat g_cube_vertex_buffer_data [] = {
       -1.0f,-1.0f,-1.0f, // triangle 1 : begin
@@ -436,6 +460,11 @@ int main (void) {
    glBindBuffer(GL_ARRAY_BUFFER, CubeVertexBuffer);
    glBufferData(GL_ARRAY_BUFFER, sizeof(g_cube_vertex_buffer_data),
       g_cube_vertex_buffer_data, GL_STATIC_DRAW);
+
+   glGenBuffers(1, &QuadVertexBuffer);
+   glBindBuffer(GL_ARRAY_BUFFER, QuadVertexBuffer);
+   glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data),
+      g_quad_vertex_buffer_data, GL_STATIC_DRAW);
    
    // GLuint octahedronVertexBuffer;
    // glGenBuffers(1, &octahedronVertexBuffer);
@@ -497,25 +526,22 @@ int main (void) {
    // glBufferData(GL_ARRAY_BUFFER, sizeof(g_uv_buffer_data), g_uv_buffer_data,
    //    GL_STATIC_DRAW);
 
+   
    GLenum glstatus;
    FramebufferName = 0;
    glGenFramebuffers(1, &FramebufferName);
-   exitOnGlError();
    glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
-   exitOnGlError();
    // The texture we're going to render to
+   depthTexture = 0;
    glGenTextures(1, &depthTexture);
-   exitOnGlError();
 
 // "Bind" the newly created texture : all future texture functions will modify this texture
    glBindTexture(GL_TEXTURE_2D, depthTexture);
-   exitOnGlError();
 
 // Give an empty image to OpenGL ( the last "0" )
    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, width, height, 0,
-                GL_DEPTH_COMPONENTS, GL_FLOAT, 0);
-   exitOnGlError();
-
+                GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+   
 // Poor filtering. Needed !
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
@@ -524,10 +550,8 @@ int main (void) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE,
                    GL_COMPARE_R_TO_TEXTURE);
-   exitOnGlError();
    
    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0);
-   exitOnGlError();
    glDrawBuffer(GL_NONE);
    glstatus =
       glCheckNamedFramebufferStatus(FramebufferName,GL_FRAMEBUFFER);
@@ -560,10 +584,23 @@ int main (void) {
       default:
          break;
    }
+
+   programID = LoadShaders("playgroundvertex.glsl",
+                           "playgroundfragment.glsl",
+                           "playgroundgeom.glsl");
+   quadProgID = LoadShaders("shadowQuadVertex.glsl",
+                            "simpleTextureFrag.glsl");
+   MID = glGetUniformLocation(programID, "M");
+   VPID = glGetUniformLocation(programID, "VP");
+   magnitudeID = glGetUniformLocation(programID, "magnitude");
    
+   depthMVPID2 = glGetUniformLocation(programID, "depthMVP");
+   shadowMapID = glGetUniformLocation(programID, "shadowMap");
+
+   texID = glGetUniformLocation(quadProgID, "depthtexture");
    GLsizei verticesToDraw=0;
-   
-   // Initialize our little text library with the Holstein font
+
+// Initialize our little text library with the Holstein font
    initText2D( "Holstein.DDS" );
    
    // For speed computation
@@ -623,7 +660,7 @@ int main (void) {
    float speedOfBullet = 50.0f;
    int iii=100;
    int sign=1;
-   float magnitude=0.0;
+   magnitude=0.0;
    bool startExplode=false;
    do {
       lastTime = currentTime;
@@ -666,7 +703,7 @@ int main (void) {
             startExplode=false;
          }
       }
-      pWorld->Draw(programID, MID, VPID);
+      pWorld->Draw();
       if (pEye->GetCollider() != NULL) {
          ++hitCount;
          startExplode=true;
@@ -674,6 +711,7 @@ int main (void) {
       }
       sprintf(countText, "hitCount: %d", hitCount);
       
+      glViewport(0,0,width, height);
       printText2D(text, 10, 40, 20);
       printText2D(countText, 10, 10, 20);
       

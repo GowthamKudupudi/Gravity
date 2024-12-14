@@ -33,6 +33,17 @@ extern GLuint FramebufferName;
 extern float magnitude;
 extern GLuint depthTexture;
 
+extern GLuint QuadVertexBuffer;
+extern GLuint quadProgID;
+extern GLuint texID;
+extern GLuint programID;
+extern GLuint MID;
+extern GLuint VPID;
+
+extern bool orthoProj;
+extern bool lookFromSun;
+extern bool viewShadowMap;
+
 void computeMatricesFromInputs();
 
 #endif

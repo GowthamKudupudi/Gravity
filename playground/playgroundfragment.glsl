@@ -9,7 +9,7 @@ uniform sampler2D shadowMap;
 
 void main() {
    float visibility=1.0;
-   if (texture(shadowMap, shdwPos.xy).z < shdwPos.z) {
+   if (texture(shadowMap, shdwPos.xy).x <= shdwPos.z) {
       visibility=0.5;
    }
    color = vec4(fColor, 1.0)*visibility;

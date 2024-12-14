@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <vector>
 #include <glm/glm.hpp>
-#include <glfw3.h>
+#include <GLFW/glfw3.h>
 
 using namespace std;
 using namespace glm;
@@ -71,6 +71,7 @@ public:
       vector<Object*>   m_vpStuckObjs = vector<Object*>();
       float             mass_fm;
       Object*           massive_pm;
+      mat4              mModel;
    };
    static World* create_world (GLFWwindow* pWindow);
    
@@ -95,13 +96,15 @@ public:
       vec3 v3Velocity = vec3(), vec3 v3AVelocity = vec3()
    );
    
-   static void Draw (GLuint programID, GLuint mID, GLuint vpID);
+   static void Draw ();
    static void stick_objects (Object* pObj1, Object* pToObj2,
       vec3 v3AtPos,vec3 v3InDirection);
 
 private:
    World (GLFWwindow* pWindow);
    ~World ();
+   static void drawObj (Object& obj, mat4& VP);
+   static void drawObjShdw (Object& obj, mat4& VP);
    static float            m_fWidth;
    static float            m_fHeight;
    static float            m_fDepth;
